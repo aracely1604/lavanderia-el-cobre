@@ -1,0 +1,178 @@
+/* --- Paleta de colores basada en tu LOGO --- */
+:root {
+  --header-bg: #a0522d; /* Color Cobre/Sienna del logo */
+  --header-text: #ffffff; /* Letras blancas como en el logo */
+  
+  --primary-btn-bg: #cd853f; /* Tono Cobre más claro (Peru) */
+  --primary-btn-hover: #a0522d; /* Tono Cobre oscuro al pasar el mouse */
+  --primary-btn-text: #ffffff;
+
+  --secondary-btn-bg: #f4f4f4;
+  --secondary-btn-hover: #e0e0e0;
+  --secondary-btn-text: #333;
+
+  --text-color: #333;
+  --label-color: #555;
+  --link-color: #555;
+  --border-color: #ddd;
+  --form-bg: #ffffff;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: #f7f7f7;
+}
+
+.auth-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* --- Estilo del Encabezado (Header) --- */
+.auth-header {
+  background-color: var(--header-bg);
+  color: var(--header-text);
+  padding: 0.75rem 2rem; /* Ajuste de padding */
+  border-bottom: 3px solid var(--primary-btn-bg);
+
+  /* v--- ESTILOS NUEVOS PARA EL LOGO ---v */
+  display: flex;         /* Activa Flexbox */
+  align-items: center;   /* Centra verticalmente el logo y el texto */
+  gap: 1rem;             /* Espacio entre el logo y el texto */
+  /* ^--- ESTILOS NUEVOS PARA EL LOGO ---^ */
+}
+
+.auth-logo {
+  height: 40px; /* Tamaño del logo */
+  width: 40px;
+  border-radius: 4px; /* Opcional: suaviza las esquinas */
+}
+
+.auth-header h1 {
+  margin: 0; /* Quita el margen por defecto del h1 */
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+/* --- Contenedor del Formulario --- */
+.auth-form-container {
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.auth-form {
+  background: var(--form-bg);
+  padding: 2.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.auth-form h2 {
+  text-align: center;
+  color: var(--text-color);
+  margin: 0 0 1rem 0;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* --- Estilo de Campos (Label + Input) --- */
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--label-color);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.form-group input {
+  border: none;
+  border-bottom: 2px solid var(--border-color);
+  padding: 0.5rem 0.2rem;
+  font-size: 1rem;
+}
+.form-group input:focus {
+  outline: none;
+  border-bottom-color: var(--primary-btn-bg);
+}
+
+/* --- Estilo de Botones --- */
+.btn {
+  padding: 0.9rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.btn-primary {
+  background-color: var(--primary-btn-bg);
+  color: var(--primary-btn-text);
+}
+.btn-primary:hover {
+  background-color: var(--primary-btn-hover);
+}
+
+.btn-secondary {
+  background-color: var(--secondary-btn-bg);
+  color: var(--secondary-btn-text);
+}
+.btn-secondary:hover {
+  background-color: var(--secondary-btn-hover);
+}
+
+.btn-link {
+  background: none;
+  color: var(--link-color);
+  font-size: 0.85rem;
+  padding: 0;
+  text-transform: none;
+}
+.btn-link:hover {
+  text-decoration: underline;
+}
+
+.btn-back {
+  background: none;
+  color: var(--link-color);
+  font-size: 0.9rem;
+  padding: 0;
+  font-weight: 600;
+  align-self: flex-start;
+  text-transform: uppercase;
+}
+.btn-back:hover {
+  color: var(--text-color);
+}
+
+.form-divider {
+  text-align: center;
+  color: #aaa;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.reset-info {
+  font-size: 0.9rem;
+  color: var(--label-color);
+  text-align: center;
+  margin: -0.5rem 0 0.5rem 0;
+}

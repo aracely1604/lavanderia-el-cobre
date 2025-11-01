@@ -1,35 +1,38 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState } from 'react';
+import AuthPage from './AuthPage';
+import ComandasPage from './ComandasPage'; // Importa la nueva página
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  
+  // Estado para mostrar/ocultar la página de crear comanda
+  const [showCreate, setShowCreate] = useState(false); 
 
-  return (
-    <>
+  // Si el usuario no ha iniciado sesión, muestra la página de Auth
+  if (!isLoggedIn) {
+    return <AuthPage onLoginSuccess={() => setIsLoggedIn(true)} />;
+  }
+  
+  // --- Si el usuario SÍ inició sesión ---
+  
+  // Si showCreate es true, mostramos la pág. de crear (que haremos después)
+  if (showCreate) {
+    // Esto es un placeholder para el siguiente paso
+    return (
       <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        <h1>Página de Crear Comanda (Próximo paso)</h1>
+        <button onClick={() => setShowCreate(false)}>Volver a la lista</button>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    );
+  }
+
+  // Por defecto, muestra la lista de Comandas
+  return (
+    <ComandasPage 
+      onLogout={() => setIsLoggedIn(false)} 
+      onShowCreate={() => setShowCreate(true)} 
+    />
+  );
 }
 
-export default App
+export default App;
