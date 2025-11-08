@@ -156,3 +156,27 @@ table tr:last-child td {
 .btn-accion:hover {
   background-color: var(--primary-btn-hover);
 }
+
+/* Agrega esto a tu src/Comandas.css */
+
+.filters {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.filter-input,
+.filter-select {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.95em;
+    color: #333;
+    background-color: #fff;
+}
+
+.filter-input:focus,
+.filter-select:focus {
+    outline: none;
+    border-color: #cd853f; /* Color naranja al enfocar */
+}

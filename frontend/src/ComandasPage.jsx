@@ -1,106 +1,138 @@
 import React, { useState, useEffect } from 'react';
-import { db } from './firebaseConfig'; //  Importamos la base de datos
-import { collection, getDocs, query, orderBy } from 'firebase/firestore'; // Funciones para leer datos
-import './Comandas.css'; // Un CSS nuevo para esta página
-import logoSrc from './assets/Logo lavanderia.jpeg'; 
+import { db, auth } from './firebaseConfig';
+import { collection, query, orderBy, onSnapshot, where, Timestamp } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
+import './Comandas.css';
+import logoSrc from './assets/Logo lavanderia.jpeg';
 
-// Este componente recibe "onLogout" y "onShowCreate" desde App.jsx
-export default function ComandasPage({ onLogout, onShowCreate }) {
-  
-  // Estados para guardar los datos y saber si está cargando
+export default function ComandasPage() {
+  const navigate = useNavigate();
   const [comandas, setComandas] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // useEffect se ejecuta automáticamente cuando el componente carga
+  const [filtroFecha, setFiltroFecha] = useState(() => {
+    const hoy = new Date();
+    const offset = hoy.getTimezoneOffset();
+    return new Date(hoy.getTime() - (offset * 60 * 1000)).toISOString().split('T')[0];
+  });
+  const [filtroTipo, setFiltroTipo] = useState('Todos');
+
   useEffect(() => {
-    // Esta función se conecta a Firebase para traer los datos
-    const fetchComandas = async () => {
-      setLoading(true);
-      try {
-        //  "Trae todo de la colección 'comandas', ordenado por fecha"
-        const comandasRef = collection(db, "comandas");
-        const q = query(comandasRef, orderBy("fechaIngreso", "desc")); // Ordena por fecha (¡importante!)
+    setLoading(true);
+    let q = query(collection(db, "comandas"), orderBy("fechaIngreso", "desc"));
 
-        // Ejecuta la consulta
-        const querySnapshot = await getDocs(q);
-        
-        // Convierte los datos de Firebase a un array que React entiende
-        const comandasList = querySnapshot.docs.map(doc => ({
-          id: doc.id, // El ID único del documento
-          ...doc.data() // Todos los demás datos (numeroOrden, tipoCliente, etc.)
-        }));
+    // Filtro de Tipo de Cliente
+    if (filtroTipo !== 'Todos') {
+      q = query(q, where("tipoCliente", "==", filtroTipo));
+    }
 
-        // Guarda los datos en el estado
-        setComandas(comandasList);
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const comandasList = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      const comandasFiltradas = comandasList.filter(comanda => {
+        if (!filtroFecha) return true;
+        const fechaComanda = comanda.fechaIngreso?.toDate().toISOString().split('T')[0];
+        return fechaComanda === filtroFecha;
+      });
 
-      } catch (error) {
-        console.error("Error al cargar comandas: ", error);
-      }
-      setLoading(false); // Deja de cargar
-    };
+      setComandas(comandasFiltradas);
+      setLoading(false);
+    }, (error) => {
+      console.error("Error al cargar comandas:", error);
+      setLoading(false);
+    });
 
-    fetchComandas();
-  }, []); // El [] vacío significa que esto se ejecuta solo 1 vez
+    return () => unsubscribe();
+  }, [filtroFecha, filtroTipo]);
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    navigate('/');
+  };
 
   return (
     <div className="comandas-container">
-      {/* Header (reutilizado) */}
       <header className="auth-header">
-        <img src={logoSrc} alt="Logo" className="auth-logo" />
-        <h1>Lavandería El Cobre Spa</h1>
+        <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+            <img src={logoSrc} alt="Logo" className="auth-logo" />
+            <h1>Lavandería El Cobre Spa</h1>
+        </div>
       </header>
       
       <main className="comandas-main">
-        {/* Barra de herramientas superior */}
         <div className="comandas-toolbar">
-          <button onClick={onLogout} className="btn-logout">Cerrar sesión</button>
+          <button onClick={handleLogout} className="btn-logout">CERRAR SESIÓN</button>
+          
           <div className="filters">
-            <input type="date" />
-            <select>
-              <option value="">Todo tipo</option>
+            <input 
+              type="date" 
+              value={filtroFecha}
+              onChange={(e) => setFiltroFecha(e.target.value)}
+              className="filter-input"
+            />
+            <select 
+              value={filtroTipo}
+              onChange={(e) => setFiltroTipo(e.target.value)}
+              className="filter-select"
+            >
+              <option value="Todos">Todos los tipos</option>
               <option value="Particular">Particular</option>
-              <option value="Empresa">Empresa</option>
+              {/* Quitamos Empresa, dejamos solo Hotel */}
+              <option value="Hotel">Hotel</option>
             </select>
           </div>
-          <button onClick={onShowCreate} className="btn-crear-comanda">Crear comanda</button>
+
+          <button onClick={() => navigate('/registro-comanda')} className="btn-crear-comanda">
+            CREAR COMANDA
+          </button>
         </div>
 
         <h2>COMANDAS GENERADAS</h2>
 
-        {/* Contenedor de la tabla */}
         <div className="table-container">
           <table>
             <thead>
               <tr>
-                <th></th> {/* Columna para el ícono de ojo */}
-                <th>Número orden</th>
-                <th>Tipo cliente</th>
-                <th>Fecha ingreso</th>
-                <th>Monto total</th>
-                <th>Acciones</th>
+                <th></th>
+                <th>NÚMERO ORDEN</th>
+                <th>CLIENTE</th>
+                <th>TIPO CLIENTE</th> {/* Nueva Columna */}
+                <th>FECHA INGRESO</th>
+                <th>MONTO TOTAL</th>
+                <th>ACCIONES</th>
               </tr>
             </thead>
             <tbody>
-              {/* --- Lógica para mostrar datos --- */}
-              {loading && (
-                <tr><td colSpan="6">Cargando comandas...</td></tr>
-              )}
-
-              {!loading && comandas.length === 0 && (
-                <tr><td colSpan="6">No hay comandas registradas. ¡Crea la primera!</td></tr>
-              )}
-
-              {!loading && comandas.map((comanda) => (
+              {loading && <tr><td colSpan="7" style={{textAlign: 'center', padding: '20px'}}>Cargando comandas...</td></tr>}
+              {!loading && comandas.length === 0 && <tr><td colSpan="7" style={{textAlign: 'center', padding: '20px'}}>No hay comandas para esta fecha/tipo.</td></tr>}
+              
+              {comandas.map((comanda) => (
                 <tr key={comanda.id}>
-                  <td className="action-icon">👁️</td> {/* Icono de ojo  */}
+                  <td 
+                  className="action-icon" 
+                  title="Ver detalle"
+                  onClick={() => navigate(`/detalle/${comanda.id}`)} /* <--- ESTO FALTABA */
+                  style={{ cursor: 'pointer' }} /* Para que el mouse se vea como manito */
+                  >
+                    👁️
+                  </td>
                   <td>{comanda.numeroOrden}</td>
+                  <td>{comanda.nombreCliente}</td>
+                  {/* Nueva celda para mostrar el tipo */}
                   <td>{comanda.tipoCliente}</td>
-                  {/*guardar la fecha como string (ej. "27-10-2025")  */}
-                  <td>{comanda.fechaIngreso.toDate ? comanda.fechaIngreso.toDate().toLocaleDateString('es-CL') : comanda.fechaIngreso}</td>
-                  <td>${new Intl.NumberFormat('es-CL').format(comanda.montoTotal)}</td>
+                  <td>
+                    {comanda.fechaIngreso?.toDate 
+                      ? comanda.fechaIngreso.toDate().toLocaleDateString('es-CL') 
+                      : 'Fecha inválida'}
+                  </td>
+                  <td>${new Intl.NumberFormat('es-CL').format(comanda.montoTotal || 0)}</td>
                   <td className="actions-cell">
-                    <button className="btn-accion btn-descargar">Descargar</button>
-                    <button className="btn-accion btn-notificar">Notificar al cliente</button>
+                    <button className="btn-accion btn-descargar">DESCARGAR</button>
+                    <button className="btn-accion btn-notificar">NOTIFICAR</button>
                   </td>
                 </tr>
               ))}

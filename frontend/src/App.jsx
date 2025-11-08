@@ -1,38 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import AuthPage from './AuthPage';
-import ComandasPage from './ComandasPage'; // Importa la nueva página
+import ComandasPage from './ComandasPage';
+import RegistroComandaPage from './RegistroComandaPage';
+import DetalleComandaPage from './DetalleComandaPage';
+import ComprobantePage from './ComprobantePage';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  
-  // Estado para mostrar/ocultar la página de crear comanda
-  const [showCreate, setShowCreate] = useState(false); 
+  // Usamos localStorage para que si refrescas la página no te saque
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    localStorage.getItem('simulatedLogin') === 'true'
+  );
 
-  // Si el usuario no ha iniciado sesión, muestra la página de Auth
-  if (!isLoggedIn) {
-    return <AuthPage onLoginSuccess={() => setIsLoggedIn(true)} />;
-  }
-  
-  // --- Si el usuario SÍ inició sesión ---
-  
-  // Si showCreate es true, mostramos la pág. de crear (que haremos después)
-  if (showCreate) {
-    // Esto es un placeholder para el siguiente paso
-    return (
-      <div>
-        <h1>Página de Crear Comanda (Próximo paso)</h1>
-        <button onClick={() => setShowCreate(false)}>Volver a la lista</button>
-      </div>
-    );
-  }
+  // Función para simular el INGRESO
+  const handleLogin = () => {
+    localStorage.setItem('simulatedLogin', 'true');
+    setIsLoggedIn(true);
+  };
 
-  // Por defecto, muestra la lista de Comandas
+  // Función para simular el CIERRE DE SESIÓN
+  const handleLogout = () => {
+    localStorage.removeItem('simulatedLogin');
+    setIsLoggedIn(false);
+  };
+
   return (
-    <ComandasPage 
-      onLogout={() => setIsLoggedIn(false)} 
-      onShowCreate={() => setShowCreate(true)} 
-    />
+    <Router>
+      <Routes>
+        {/* Si no está "logueado", muestra AuthPage y le pasa la función handleLogin */}
+        <Route 
+          path="/" 
+          element={!isLoggedIn ? <AuthPage onLogin={handleLogin} /> : <Navigate to="/comandas" replace />} 
+        />
+        
+        {/* Rutas protegidas por la simulación */}
+        <Route 
+          path="/comandas" 
+          element={isLoggedIn ? <ComandasPage onLogout={handleLogout} /> : <Navigate to="/" replace />} 
+        />
+        <Route 
+          path="/registro-comanda" 
+          element={isLoggedIn ? <RegistroComandaPage /> : <Navigate to="/" replace />} 
+        />
+        <Route 
+            path="/detalle/:id" 
+            element={isLoggedIn ? <DetalleComandaPage /> : <Navigate to="/" replace />} 
+        />
+        <Route 
+            path="/comprobante/:id" 
+            element={isLoggedIn ? <ComprobantePage /> : <Navigate to="/" replace />} 
+        />
+      </Routes>
+    </Router>
   );
 }
-
 export default App;
