@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from './firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
-import './RegistroComanda.css'; // Reutilizamos estilos por ahora
+import './DetalleComandaPage.css';
 
 export default function DetalleComandaPage() {
   const { id } = useParams(); // Captura el ID de la URL
@@ -34,21 +34,42 @@ export default function DetalleComandaPage() {
   if (!comanda) return null;
 
   return (
-    <div className="registro-container">
+    <div className="detalle-container">
       <button className="btn-back" onClick={() => navigate('/comandas')}>REGRESAR</button>
-      <h2>DETALLE DE COMANDA: {comanda.numeroOrden}</h2>
+      <h2 className='title-detalle'>DETALLE DE COMANDA: {comanda.numeroOrden}</h2>
       
       {/* --- AQUÍ SE DEBE DAR EL DISEÑO --- */}
       <p><strong>Cliente:</strong> {comanda.nombreCliente}</p>
       <p><strong>Fecha:</strong> {comanda.fechaIngreso?.toDate().toLocaleDateString('es-CL')}</p>
       
+
       <h3>Prendas</h3>
-      <ul>
-        {comanda.prendas?.map((item, index) => (
-          <li key={index}>{item.cantidad}x {item.nombre} - ${item.valor}</li>
-        ))}
-      </ul>
-       <h3>Total: ${comanda.montoTotal}</h3>
+      <table className='tabla-prendas'>
+        <thead>
+          <tr>
+            <th>Cant.</th>
+            <th>Artículo</th>
+            <th className="derecha">P. Unitario</th>
+          </tr>
+        </thead>
+        
+        <tbody>
+          {comanda.prendas?.map((item, index) => {
+            return (
+              <tr key={index}>
+                <td>{item.cantidad}x</td>
+                <td className="nombre-prenda">
+                  <span className="nombre-texto">{item.nombre}</span>
+                </td>
+                <td className="derecha">{(item.valor)}</td>
+              </tr>
+            );
+          })}
+
+        </tbody>
+      </table>
+
+      
        
        {/* Mostrar fotos si existen */}
        {comanda.fotos && comanda.fotos.length > 0 && (
