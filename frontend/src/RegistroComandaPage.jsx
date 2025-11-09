@@ -67,7 +67,7 @@ export default function RegistroComandaPage() {
     const addPrendaRow = () => setPrendas([...prendas, { cantidad: 1, nombre: '', valor: '', detalle: '' }]);
     const removePrendaRow = (index) => { if (prendas.length > 1) setPrendas(prendas.filter((_, i) => i !== index)); };
 
-    // --- GUARDADO CON FOTOS ---
+    // --- cd ..GUARDADO CON FOTOS ---
     const handleGuardar = async () => {
         if (!nombreCliente || !telefono) {
             alert('Falta el nombre del cliente o el teléfono.');

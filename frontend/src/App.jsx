@@ -4,7 +4,7 @@ import AuthPage from './AuthPage';
 import ComandasPage from './ComandasPage';
 import RegistroComandaPage from './RegistroComandaPage';
 import DetalleComandaPage from './DetalleComandaPage';
-import ComprobantePage from './ComprobantePage';
+
 
 function App() {
   // Usamos localStorage para que si refrescas la página no te saque
@@ -45,10 +45,6 @@ function App() {
         <Route 
             path="/detalle/:id" 
             element={isLoggedIn ? <DetalleComandaPage /> : <Navigate to="/" replace />} 
-        />
-        <Route 
-            path="/comprobante/:id" 
-            element={isLoggedIn ? <ComprobantePage /> : <Navigate to="/" replace />} 
         />
       </Routes>
     </Router>
