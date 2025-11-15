@@ -2,11 +2,21 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios"; // 👈 nuevo
 import { db, storage } from "./firebaseConfig";
-import { collection, addDoc, Timestamp } from "firebase/firestore";
+import { 
+    collection, 
+    addDoc, 
+    Timestamp, 
+    query, 
+    where, 
+    getDocs, 
+    limit 
+} from "firebase/firestore";
+// import { collection, addDoc, Timestamp, doc, getDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import "./RegistroComanda.css";
 import logoSrc from "./assets/Logo lavanderia.jpeg";
 import generarFactura from "./FacturaGenerador";
+import ModuloClienteRecientes from "./ModuloClienteReciente";
 
 export default function RegistroComandaPage() {
   const navigate = useNavigate();
@@ -43,6 +53,7 @@ export default function RegistroComandaPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [fotos, setFotos] = useState([]);
+  const [showClientSearchModal, setShowClientSearchModal] = useState(false);
 
 
   const PORCENTAJE_EXPRESS = 0.5;
@@ -79,6 +90,14 @@ export default function RegistroComandaPage() {
 
   const removePrendaRow = (index) => {
     if (prendas.length > 1) setPrendas(prendas.filter((_, i) => i !== index));
+  };
+
+  const handleClientFound = (phone, clientData) => {
+      setTelefono(phone); // Actualiza el teléfono con el valor buscado
+      setNombreCliente(clientData.nombreCliente || ''); 
+      setDireccion(clientData.direccion || ''); 
+      setTipoCliente(clientData.tipoCliente || 'Particular');
+      alert(`Cliente encontrado: ${clientData.nombreCliente}. Datos cargados.`);
   };
 
   // --- Subir fotos y guardar datos ---
@@ -196,6 +215,11 @@ export default function RegistroComandaPage() {
 
   return (
     <div className="registro-container">
+      <ModuloClienteRecientes
+          isOpen={showClientSearchModal}
+          onClose={() => setShowClientSearchModal(false)} // Cierra el modal
+          onClientFound={handleClientFound} // Carga los datos
+      />
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -273,6 +297,14 @@ export default function RegistroComandaPage() {
             disabled={isSubmitting}
           >
             {isSubmitting ? "Enviando..." : "💾 Guardar Comanda"}
+          </button>
+          <button
+            className="btn-header btn-buscar-cliente"
+            type="button"
+            onClick={() => setShowClientSearchModal(true)} // Abre el modal
+            style={{ backgroundColor: '#007bff', color: 'white' }}
+          >
+            🔎 Buscar Cliente
           </button>
         </div>
       </header>
