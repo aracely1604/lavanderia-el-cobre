@@ -34,6 +34,7 @@ export default function RegistroComandaPage() {
   const [telefono, setTelefono] = useState("");
   const [tipoCliente, setTipoCliente] = useState("Particular");
   const [servicioExpress, setServicioExpress] = useState(false);
+  const [numeroBoucher, setNumeroBoucher] = useState('');
   const [prendas, setPrendas] = useState([
     { cantidad: 1, nombre: "", valor: "", detalle: "" },
   ]);
@@ -42,6 +43,7 @@ export default function RegistroComandaPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [fotos, setFotos] = useState([]);
+
 
   const PORCENTAJE_EXPRESS = 0.5;
 
@@ -116,10 +118,15 @@ export default function RegistroComandaPage() {
         storage,
       });
 
+      const ahora = new Date();
+            const horaIngreso = ahora.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+
       // Guardar en Firestore
       await addDoc(collection(db, "comandas"), {
         numeroOrden,
         fechaIngreso: Timestamp.fromDate(new Date(fechaIngreso + "T12:00:00")),
+        horaIngreso,
+        numeroBoucher,
         nombreCliente,
         direccion,
         telefono,
@@ -292,6 +299,18 @@ export default function RegistroComandaPage() {
               onChange={(e) => setFechaIngreso(e.target.value)}
             />
           </div>
+          <div className="form-row">
+                    <div className="form-group">
+                        <label>N° BOUCHER </label>
+                        <input 
+                            type="text" 
+                            value={numeroBoucher} 
+                            onChange={(e) => setNumeroBoucher(e.target.value)} 
+                            placeholder="Ingrese N° de Boucher" 
+                        />
+                    </div>
+                </div>
+                {/* ------------------------ */}
         </div>
         <div className="form-row">
           <div className="form-group" style={{ flex: 2 }}>
@@ -337,7 +356,6 @@ export default function RegistroComandaPage() {
               onChange={(e) => setTipoCliente(e.target.value)}
             >
               <option value="Particular">Particular</option>
-              <option value="Hotel">Hotel</option>
             </select>
           </div>
           <div className="form-group checkbox-group">

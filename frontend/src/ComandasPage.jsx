@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from './firebaseConfig';
-import { collection, query, orderBy, onSnapshot, where, Timestamp } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, doc, updateDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import './Comandas.css';
@@ -11,21 +11,18 @@ export default function ComandasPage() {
   const [comandas, setComandas] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Solo mantenemos el estado para la FECHA
   const [filtroFecha, setFiltroFecha] = useState(() => {
     const hoy = new Date();
     const offset = hoy.getTimezoneOffset();
     return new Date(hoy.getTime() - (offset * 60 * 1000)).toISOString().split('T')[0];
   });
-  const [filtroTipo, setFiltroTipo] = useState('Todos');
 
   useEffect(() => {
     setLoading(true);
+    
+    // Consulta básica: Trae todo ordenado por fecha
     let q = query(collection(db, "comandas"), orderBy("fechaIngreso", "desc"));
-
-    // Filtro de Tipo de Cliente
-    if (filtroTipo !== 'Todos') {
-      q = query(q, where("tipoCliente", "==", filtroTipo));
-    }
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const comandasList = querySnapshot.docs.map(doc => ({
@@ -33,6 +30,7 @@ export default function ComandasPage() {
         ...doc.data()
       }));
       
+      // Filtramos aquí solo por la fecha seleccionada
       const comandasFiltradas = comandasList.filter(comanda => {
         if (!filtroFecha) return true;
         const fechaComanda = comanda.fechaIngreso?.toDate().toISOString().split('T')[0];
@@ -47,11 +45,25 @@ export default function ComandasPage() {
     });
 
     return () => unsubscribe();
-  }, [filtroFecha, filtroTipo]);
+  }, [filtroFecha]); // Solo se vuelve a ejecutar si cambias la fecha
 
   const handleLogout = async () => {
     await signOut(auth);
     navigate('/');
+  };
+
+  const handleCancelar = async (id) => {
+    if (window.confirm("¿Estás seguro de que quieres cancelar esta comanda?")) {
+        try {
+            const comandaRef = doc(db, "comandas", id);
+            await updateDoc(comandaRef, {
+                estado: "Cancelada"
+            });
+        } catch (error) {
+            console.error("Error al cancelar:", error);
+            alert("Error al cancelar la comanda.");
+        }
+    }
   };
 
   return (
@@ -68,22 +80,13 @@ export default function ComandasPage() {
           <button onClick={handleLogout} className="btn-logout">CERRAR SESIÓN</button>
           
           <div className="filters">
+            {/* ÚNICO FILTRO: FECHA */}
             <input 
               type="date" 
               value={filtroFecha}
               onChange={(e) => setFiltroFecha(e.target.value)}
               className="filter-input"
             />
-            <select 
-              value={filtroTipo}
-              onChange={(e) => setFiltroTipo(e.target.value)}
-              className="filter-select"
-            >
-              <option value="Todos">Todos los tipos</option>
-              <option value="Particular">Particular</option>
-              {/* Quitamos Empresa, dejamos solo Hotel */}
-              <option value="Hotel">Hotel</option>
-            </select>
           </div>
 
           <button onClick={() => navigate('/registro-comanda')} className="btn-crear-comanda">
@@ -100,42 +103,84 @@ export default function ComandasPage() {
                 <th></th>
                 <th>NÚMERO ORDEN</th>
                 <th>CLIENTE</th>
-                <th>TIPO CLIENTE</th> {/* Nueva Columna */}
-                <th>FECHA INGRESO</th>
+                <th>TIPO</th>
+                <th>FECHA</th>
+                <th>HORA</th>
                 <th>MONTO TOTAL</th>
                 <th>ACCIONES</th>
               </tr>
             </thead>
             <tbody>
-              {loading && <tr><td colSpan="7" style={{textAlign: 'center', padding: '20px'}}>Cargando comandas...</td></tr>}
-              {!loading && comandas.length === 0 && <tr><td colSpan="7" style={{textAlign: 'center', padding: '20px'}}>No hay comandas para esta fecha/tipo.</td></tr>}
+              {loading && <tr><td colSpan="8" style={{textAlign: 'center', padding: '20px'}}>Cargando comandas...</td></tr>}
+              {!loading && comandas.length === 0 && <tr><td colSpan="8" style={{textAlign: 'center', padding: '20px'}}>No hay comandas para esta fecha.</td></tr>}
               
-              {comandas.map((comanda) => (
-                <tr key={comanda.id}>
-                  <td 
-                  className="action-icon" 
-                  title="Ver detalle"
-                  onClick={() => navigate(`/detalle/${comanda.id}`)} /* <--- ESTO FALTABA */
-                  style={{ cursor: 'pointer' }} /* Para que el mouse se vea como manito */
-                  >
-                    👁️
-                  </td>
-                  <td>{comanda.numeroOrden}</td>
-                  <td>{comanda.nombreCliente}</td>
-                  {/* Nueva celda para mostrar el tipo */}
-                  <td>{comanda.tipoCliente}</td>
-                  <td>
-                    {comanda.fechaIngreso?.toDate 
-                      ? comanda.fechaIngreso.toDate().toLocaleDateString('es-CL') 
-                      : 'Fecha inválida'}
-                  </td>
-                  <td>${new Intl.NumberFormat('es-CL').format(comanda.montoTotal || 0)}</td>
-                  <td className="actions-cell">
-                    <button className="btn-accion btn-descargar">DESCARGAR</button>
-                    <button className="btn-accion btn-notificar">NOTIFICAR</button>
-                  </td>
-                </tr>
-              ))}
+              {comandas.map((comanda) => {
+                const isCancelada = comanda.estado === "Cancelada";
+                const rowStyle = isCancelada ? { backgroundColor: '#ffebee', color: '#999' } : {};
+                
+                return (
+                  <tr key={comanda.id} style={rowStyle}>
+                    <td 
+                      className="action-icon" 
+                      title="Ver detalle"
+                      onClick={() => navigate(`/detalle/${comanda.id}`)}
+                      style={{ cursor: 'pointer', opacity: isCancelada ? 0.5 : 1 }}
+                    >
+                      👁️
+                    </td>
+                    <td>{comanda.numeroOrden}</td>
+                    <td>{comanda.nombreCliente}</td>
+                    <td>{comanda.tipoCliente}</td>
+                    <td>
+                      {comanda.fechaIngreso?.toDate 
+                        ? comanda.fechaIngreso.toDate().toLocaleDateString('es-CL') 
+                        : 'Fecha inválida'}
+                    </td>
+                    <td>{comanda.horaIngreso || '--:--'}</td>
+                    <td style={{ textDecoration: isCancelada ? 'line-through' : 'none' }}>
+                      ${new Intl.NumberFormat('es-CL').format(comanda.montoTotal || 0)}
+                    </td>
+                    
+                    <td className="actions-cell">
+                        <button 
+                            className="btn-accion btn-descargar" 
+                            onClick={() => navigate(`/comprobante/${comanda.id}`)}
+                            disabled={isCancelada}
+                            style={{ opacity: isCancelada ? 0.5 : 1 }}
+                        >
+                            DESCARGAR
+                        </button>
+
+                        <button 
+                            className="btn-accion btn-notificar" 
+                            onClick={() => navigate(`/notificar/${comanda.id}`)}
+                            disabled={isCancelada}
+                            style={{ opacity: isCancelada ? 0.5 : 1 }}
+                        >
+                            NOTIFICAR
+                        </button>
+
+                        {!isCancelada ? (
+                            <button 
+                                className="btn-icon-cancel" 
+                                onClick={() => handleCancelar(comanda.id)}
+                                title="Cancelar pedido"
+                                style={{
+                                    marginLeft: '5px', 
+                                    background: 'none', border: '2px solid #dc3545', color: '#dc3545', 
+                                    borderRadius: '50%', width: '25px', height: '25px', cursor: 'pointer', 
+                                    fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                }}
+                            >
+                                ✕
+                            </button>
+                        ) : (
+                            <span style={{color: 'red', fontWeight: 'bold', fontSize: '0.7em', marginLeft: '5px'}}>CANCELADA</span>
+                        )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
