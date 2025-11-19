@@ -30,7 +30,8 @@ export default async function generarFactura({
           <h2 style="margin:0;color:#004080;">Lavandería El Cobre</h2>
           <p style="margin:0;">Mauricio A. Aguilera Bautista</p>
           <p style="margin:0;">R.U.T. 16.565.668-K</p>
-          <p style="margin:0;">Balmaceda N°1276 - Fono: 96262665</p>
+          <p style="margin:0;">Balmaceda N°1276 - Fono: 962262655</p>
+          <p style="margin:0;">E:mail: lavanderiaelcobre@hotmail.com</p>
         </div>
       </div>
 

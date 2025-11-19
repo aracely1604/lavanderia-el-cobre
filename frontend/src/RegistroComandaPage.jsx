@@ -2,14 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios"; // 👈 nuevo
 import { db, storage } from "./firebaseConfig";
-import { 
-    collection, 
-    addDoc, 
-    Timestamp, 
-    query, 
-    where, 
-    getDocs, 
-    limit 
+import {
+  collection,
+  addDoc,
+  Timestamp,
+  query,
+  where,
+  getDocs,
+  limit,
 } from "firebase/firestore";
 // import { collection, addDoc, Timestamp, doc, getDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -44,7 +44,7 @@ export default function RegistroComandaPage() {
   const [telefono, setTelefono] = useState("");
   const [tipoCliente, setTipoCliente] = useState("Particular");
   const [servicioExpress, setServicioExpress] = useState(false);
-  const [numeroBoucher, setNumeroBoucher] = useState('');
+  const [numeroBoucher, setNumeroBoucher] = useState("");
   const [prendas, setPrendas] = useState([
     { cantidad: 1, nombre: "", valor: "", detalle: "" },
   ]);
@@ -54,7 +54,6 @@ export default function RegistroComandaPage() {
   const [showModal, setShowModal] = useState(false);
   const [fotos, setFotos] = useState([]);
   const [showClientSearchModal, setShowClientSearchModal] = useState(false);
-
 
   const PORCENTAJE_EXPRESS = 0.5;
 
@@ -93,11 +92,11 @@ export default function RegistroComandaPage() {
   };
 
   const handleClientFound = (phone, clientData) => {
-      setTelefono(phone); // Actualiza el teléfono con el valor buscado
-      setNombreCliente(clientData.nombreCliente || ''); 
-      setDireccion(clientData.direccion || ''); 
-      setTipoCliente(clientData.tipoCliente || 'Particular');
-      alert(`Cliente encontrado: ${clientData.nombreCliente}. Datos cargados.`);
+    setTelefono(phone); // Actualiza el teléfono con el valor buscado
+    setNombreCliente(clientData.nombreCliente || "");
+    setDireccion(clientData.direccion || "");
+    setTipoCliente(clientData.tipoCliente || "Particular");
+    alert(`Cliente encontrado: ${clientData.nombreCliente}. Datos cargados.`);
   };
 
   // --- Subir fotos y guardar datos ---
@@ -138,7 +137,10 @@ export default function RegistroComandaPage() {
       });
 
       const ahora = new Date();
-            const horaIngreso = ahora.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+      const horaIngreso = ahora.toLocaleTimeString("es-CL", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
 
       // Guardar en Firestore
       await addDoc(collection(db, "comandas"), {
@@ -182,27 +184,6 @@ export default function RegistroComandaPage() {
     }
   };
 
-  // --- Generar factura (solo vista previa) ---
-  const handleGenerarFactura = async () => {
-    try {
-      const urlFactura = await generarFactura({
-        logoSrc,
-        numeroOrden,
-        fechaIngreso,
-        nombreCliente,
-        direccion,
-        telefono,
-        prendas,
-        montoTotal,
-        storage,
-      });
-      window.open(urlFactura, "_blank");
-    } catch (error) {
-      console.error("Error al generar factura:", error);
-      alert(" Error al generar la factura.");
-    }
-  };
-
   const handleFileSelect = (event) => {
     const files = Array.from(event.target.files);
     const newFotos = files.map((file) =>
@@ -216,9 +197,9 @@ export default function RegistroComandaPage() {
   return (
     <div className="registro-container">
       <ModuloClienteRecientes
-          isOpen={showClientSearchModal}
-          onClose={() => setShowClientSearchModal(false)} // Cierra el modal
-          onClientFound={handleClientFound} // Carga los datos
+        isOpen={showClientSearchModal}
+        onClose={() => setShowClientSearchModal(false)} // Cierra el modal
+        onClientFound={handleClientFound} // Carga los datos
       />
       {showModal && (
         <div className="modal-overlay">
@@ -285,13 +266,6 @@ export default function RegistroComandaPage() {
             📎 Adjuntar Foto {fotos.length > 0 && `(${fotos.length})`}
           </button>
           <button
-            className="btn-header btn-factura"
-            type="button"
-            onClick={handleGenerarFactura}
-          >
-            🧾 Generar Factura
-          </button>
-          <button
             className="btn-header btn-guardar"
             onClick={() => handleGuardar(true)} // ahora siempre guarda y envía
             disabled={isSubmitting}
@@ -302,7 +276,7 @@ export default function RegistroComandaPage() {
             className="btn-header btn-buscar-cliente"
             type="button"
             onClick={() => setShowClientSearchModal(true)} // Abre el modal
-            style={{ backgroundColor: '#007bff', color: 'white' }}
+            style={{ backgroundColor: "#007bff", color: "white" }}
           >
             🔎 Buscar Cliente
           </button>
@@ -332,17 +306,17 @@ export default function RegistroComandaPage() {
             />
           </div>
           <div className="form-row">
-                    <div className="form-group">
-                        <label>N° BOUCHER </label>
-                        <input 
-                            type="text" 
-                            value={numeroBoucher} 
-                            onChange={(e) => setNumeroBoucher(e.target.value)} 
-                            placeholder="Ingrese N° de Boucher" 
-                        />
-                    </div>
-                </div>
-                {/* ------------------------ */}
+            <div className="form-group">
+              <label>N° BOUCHER </label>
+              <input
+                type="text"
+                value={numeroBoucher}
+                onChange={(e) => setNumeroBoucher(e.target.value)}
+                placeholder="Ingrese N° de Boucher"
+              />
+            </div>
+          </div>
+          {/* ------------------------ */}
         </div>
         <div className="form-row">
           <div className="form-group" style={{ flex: 2 }}>
