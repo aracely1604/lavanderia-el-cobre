@@ -114,7 +114,7 @@ export default function RegistroComandaPage() {
         const uploadPromises = fotos.map(async (fotoFile) => {
           const storageRef = ref(
             storage,
-            `comandas/${numeroOrden}/${fotoFile.name}`
+            `comandas_2/${numeroOrden}/${fotoFile.name}`
           );
           await uploadBytes(storageRef, fotoFile);
           return await getDownloadURL(storageRef);
@@ -145,7 +145,7 @@ export default function RegistroComandaPage() {
       });
 
       // Guardar en Firestore
-      await addDoc(collection(db, "comandas"), {
+      await addDoc(collection(db, "comandas_2"), {
         numeroOrden,
         fechaIngreso: Timestamp.fromDate(new Date(fechaIngreso + "T12:00:00")),
         horaIngreso,

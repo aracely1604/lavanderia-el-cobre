@@ -13,7 +13,7 @@ export default function DetalleComandaPage() {
   useEffect(() => {
     const fetchComanda = async () => {
       try {
-        const docRef = doc(db, "comandas", id);
+        const docRef = doc(db, "comandas_2", id);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           setComanda({ id: docSnap.id, ...docSnap.data() });
