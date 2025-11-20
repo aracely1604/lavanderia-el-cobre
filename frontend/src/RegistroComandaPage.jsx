@@ -133,6 +133,8 @@ export default function RegistroComandaPage() {
         telefono,
         prendas,
         montoTotal,
+        numeroBoucher,
+        servicioExpress,
         storage,
       });
 

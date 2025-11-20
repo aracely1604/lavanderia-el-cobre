@@ -100,7 +100,7 @@ export default function ComandasPage() {
           ? comanda.telefono
           : `+56${comanda.telefono.replace(/\D/g, "")}`,
         enlace: comanda.facturaPDF,
-        mensaje: `Hola ${comanda.nombreCliente}, tu ropa está lista para retiro. Gracias por preferir Lavandería El Cobre.`,
+        mensaje: `Hola ${comanda.nombreCliente}, El servicio correspondiente a la orden N° ${comanda.numeroOrden} se encuentra listo para retiro. Gracias por preferir Lavandería El Cobre.`,
       };
 
       // Enviar WhatsApp
@@ -113,6 +113,80 @@ export default function ComandasPage() {
       await updateDoc(doc(db, "comandas", comanda.id), {
         notificado: true,
         fechaNotificacion: new Date(),
+      });
+    } catch (err) {
+      console.error("Error al enviar notificación:", err);
+      alert("Error al enviar la notificación.");
+    }
+  };
+
+  const enviarNotificacionAtraso15 = async (comanda) => {
+    try {
+      if (!comanda.telefono) {
+        alert("La comanda no tiene teléfono registrado.");
+        return;
+      }
+
+      if (!comanda.facturaPDF) {
+        alert("Esta comanda no tiene factura generada.");
+        return;
+      }
+
+      const payload = {
+        numero: comanda.telefono.startsWith("+")
+          ? comanda.telefono
+          : `+56${comanda.telefono.replace(/\D/g, "")}`,
+        enlace: comanda.facturaPDF,
+        mensaje: `Hola ${comanda.nombreCliente}, Estimado/a, su orden N° ${comanda.numeroOrden} lleva 15 días lista para retiro. Le solicitamos gestionar el retiro a la brevedad.`,
+      };
+
+      // Enviar WhatsApp
+      await axios.post(
+        "https://us-central1-lavanderia-el-cobre-app.cloudfunctions.net/enviarWhatsappFactura",
+        payload
+      );
+
+      // Marcar como notificado en Firestore
+      await updateDoc(doc(db, "comandas", comanda.id), {
+        notificado15: true,
+        fechaNotificacion15: new Date(),
+      });
+    } catch (err) {
+      console.error("Error al enviar notificación:", err);
+      alert("Error al enviar la notificación.");
+    }
+  };
+
+  const enviarNotificacionAtraso30 = async (comanda) => {
+    try {
+      if (!comanda.telefono) {
+        alert("La comanda no tiene teléfono registrado.");
+        return;
+      }
+
+      if (!comanda.facturaPDF) {
+        alert("Esta comanda no tiene factura generada.");
+        return;
+      }
+
+      const payload = {
+        numero: comanda.telefono.startsWith("+")
+          ? comanda.telefono
+          : `+56${comanda.telefono.replace(/\D/g, "")}`,
+        enlace: comanda.facturaPDF,
+        mensaje: `Hola ${comanda.nombreCliente}, Estimado/a, su orden N° ${comanda.numeroOrden} lleva 30 días sin ser retirada. La empresa no se hace responsable por prendas después de este periodo.`,
+      };
+
+      // Enviar WhatsApp
+      await axios.post(
+        "https://us-central1-lavanderia-el-cobre-app.cloudfunctions.net/enviarWhatsappFactura",
+        payload
+      );
+
+      // Marcar como notificado en Firestore
+      await updateDoc(doc(db, "comandas", comanda.id), {
+        notificado30: true,
+        fechaNotificacion30: new Date(),
       });
     } catch (err) {
       console.error("Error al enviar notificación:", err);
@@ -264,6 +338,42 @@ export default function ComandasPage() {
                         }}
                       >
                         {comanda.notificado ? "✔ ENVIADO" : "NOTIFICAR"}
+                      </button>
+
+                      <button
+                        className="btn-accion btn-notificar"
+                        onClick={() => enviarNotificacionAtraso15(comanda)}
+                        disabled={comanda.notificado15 || isCancelada}
+                        style={{
+                          opacity: isCancelada
+                            ? 0.5
+                            : comanda.notificado15
+                            ? 0.6
+                            : 1,
+                          backgroundColor: comanda.notificado15
+                            ? "#28a745"
+                            : "#d68a31",
+                        }}
+                      >
+                        {comanda.notificado15 ? "✔ 15 DIAS" : "15 DIAS"}
+                      </button>
+
+                      <button
+                        className="btn-accion btn-notificar"
+                        onClick={() => enviarNotificacionAtraso30(comanda)}
+                        disabled={comanda.notificado30 || isCancelada}
+                        style={{
+                          opacity: isCancelada
+                            ? 0.5
+                            : comanda.notificado30
+                            ? 0.6
+                            : 1,
+                          backgroundColor: comanda.notificado30
+                            ? "#28a745"
+                            : "#d68a31",
+                        }}
+                      >
+                        {comanda.notificado30 ? "✔ 30 DIAS" : "30 DIAS"}
                       </button>
 
                       {!isCancelada ? (

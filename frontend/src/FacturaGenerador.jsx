@@ -12,6 +12,8 @@ export default async function generarFactura({
   prendas,
   montoTotal,
   storage,
+  numeroBoucher,
+  servicioExpress,
 }) {
   // Crear contenedor temporal (fuera de vista)
   const factura = document.createElement("div");
@@ -23,26 +25,32 @@ export default async function generarFactura({
   factura.style.fontFamily = "Arial, sans-serif";
 
   factura.innerHTML = `
-    <div style="border:2px solid #004080;padding:15px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <img src="${logoSrc}" width="80"/>
-        <div>
-          <h2 style="margin:0;color:#004080;">Lavandería El Cobre</h2>
-          <p style="margin:0;">Mauricio A. Aguilera Bautista</p>
-          <p style="margin:0;">R.U.T. 16.565.668-K</p>
-          <p style="margin:0;">Balmaceda N°1276 - Fono: 962262655</p>
-          <p style="margin:0;">E:mail: lavanderiaelcobre@hotmail.com</p>
-        </div>
+  <div style="border:2px solid #004080;padding:15px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <img src="${logoSrc}" style="width:130px; height:130px; object-fit:contain;"/>
+      <div>
+        <h2 style="margin:0;color:#004080;">Lavandería El Cobre</h2>
+        <p style="margin:0;">Mauricio A. Aguilera Bautista</p>
+        <p style="margin:0;">R.U.T. 16.565.668-K</p>
+        <p style="margin:0;">Balmaceda N°1276 - Fono: 962262655</p>
+        <p style="margin:0;">E:mail: lavanderiaelcobre@hotmail.com</p>
       </div>
+    </div>
 
-      <h3 style="text-align:center;border-top:2px solid #004080;border-bottom:2px solid #004080;margin-top:10px;">
-        ORDEN DE TRABAJO
-      </h3>
-      <p><strong>No:</strong> ${numeroOrden}</p>
-      <p><strong>Fecha:</strong> ${fechaIngreso}</p>
-      <p><strong>Cliente:</strong> ${nombreCliente}</p>
-      <p><strong>Dirección:</strong> ${direccion || "—"}</p>
-      <p><strong>Teléfono:</strong> ${telefono}</p>
+    <h3 style="text-align:center;border-top:2px solid #004080;border-bottom:2px solid #004080;margin-top:10px;">
+      ORDEN DE TRABAJO
+    </h3>
+
+    <p><strong>No Orden:</strong> ${numeroOrden}</p>
+    <p><strong>Fecha:</strong> ${fechaIngreso}</p>
+    <p><strong>Cliente:</strong> ${nombreCliente}</p>
+    <p><strong>Dirección:</strong> ${direccion || "—"}</p>
+    <p><strong>Teléfono:</strong> ${telefono}</p>
+    <p><strong>N° Boucher:</strong> ${numeroBoucher || "—"}</p>
+    <p><strong>Servicio Express:</strong> ${
+      servicioExpress ? "Solicitado" : "No solicitado"
+    }</p>
+
 
       <table style="width:100%;border-collapse:collapse;margin-top:10px;">
         <thead>
