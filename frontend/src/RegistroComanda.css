@@ -378,3 +378,92 @@
     color: #a0522d;
     margin-bottom: 15px;
 }
+
+/* src/RegistroComanda.css */
+
+.registro-container {
+    padding: 20px;
+    max-width: 900px;
+    margin: 20px auto;
+    background-color: #f9f9f9;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.registro-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 15px 25px;
+    background-color: #a0522d; /* Marrón */
+    margin: -20px -20px 30px -20px;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border-bottom: 4px solid #cd853f;
+}
+
+.registro-header-left { display: flex; align-items: center; }
+.registro-header-logo { height: 45px; width: 45px; border-radius: 8px; margin-right: 15px; border: 2px solid #fff; }
+.registro-header-title { font-size: 1.4em; font-weight: 700; color: #ffffff; }
+
+.registro-header-actions { display: flex; gap: 10px; }
+
+.btn-header {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 25px;
+    font-size: 0.9em;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.btn-guardar { background-color: #cd853f; color: white; } /* Naranja */
+.btn-adjuntar { background-color: #fff; color: #a0522d; } /* Blanco */
+.btn-buscar-cliente { background-color: #007bff; color: white; } /* Azul */
+
+.btn-back { background: none; border: none; color: #a0522d; font-weight: 700; cursor: pointer; }
+.registro-title { font-size: 2.2em; font-weight: 800; text-align: center; margin-bottom: 40px; color: #333; }
+
+/* GRID PARA LA FILA 1 (Tres columnas iguales) */
+.form-row { display: flex; gap: 20px; margin-bottom: 20px; }
+.three-col .form-group { flex: 1; }
+
+.form-group { flex: 1; display: flex; flex-direction: column; }
+.form-group label { font-size: 0.85em; font-weight: 700; color: #666; margin-bottom: 8px; }
+.form-group input, .form-group select { padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1em; }
+
+/* FILA DE OPCIONES (Tipo Cliente + Tarjetas) */
+.options-row { align-items: flex-end; } /* Alinea abajo */
+
+.option-card {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 10px;
+    cursor: pointer;
+    height: 46px; /* Misma altura que los inputs */
+    font-weight: 600;
+    color: #555;
+    transition: all 0.2s;
+}
+
+.option-card:hover { border-color: #cd853f; }
+.option-card input { width: auto; margin: 0; margin-right: 8px; cursor: pointer; accent-color: #cd853f; }
+
+/* TABLA */
+.prendas-table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 30px; border-radius: 8px; overflow: hidden; }
+.prendas-table th { background-color: #a0522d; color: white; padding: 15px; text-align: left; }
+.prendas-table td { background-color: #fff; padding: 10px; border-bottom: 1px solid #eee; }
+.prendas-table input { width: 100%; border: 1px solid #ddd; padding: 8px; border-radius: 4px; }
+
+.add-item-btn { background-color: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 25px; margin-top: 15px; cursor: pointer; }
+.btn-icon-remove { background: none; border: none; color: #dc3545; font-size: 1.2em; cursor: pointer; }
+
+.monto-total { font-size: 1.8em; font-weight: 800; color: #a0522d; margin-top: 20px; }
