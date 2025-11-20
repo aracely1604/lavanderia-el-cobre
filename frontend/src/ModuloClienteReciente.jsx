@@ -19,7 +19,7 @@ export default function ModuloClienteRecientes ({ isOpen, onClose, onClientFound
         }
 
     try {
-        const comandasRef = collection(db, "comandas");
+        const comandasRef = collection(db, "comandas_2");
         const q = query(comandasRef, where("telefono", "==", normalizedPhone), limit(1));
         const querySnapshot = await getDocs(q);
 

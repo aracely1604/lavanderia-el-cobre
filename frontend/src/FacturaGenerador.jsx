@@ -96,7 +96,7 @@ export default async function generarFactura({
 
   // Subir a Firebase Storage
   const blob = pdf.output("blob");
-  const storageRef = ref(storage, `facturas/${numeroOrden}.pdf`);
+  const storageRef = ref(storage, `facturas_2/${numeroOrden}.pdf`);
   await uploadBytes(storageRef, blob);
   const url = await getDownloadURL(storageRef);
 

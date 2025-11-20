@@ -32,7 +32,7 @@ export default function ComandasPage() {
     setLoading(true);
 
     // Consulta básica: Trae todo ordenado por fecha
-    let q = query(collection(db, "comandas"), orderBy("fechaIngreso", "desc"));
+    let q = query(collection(db, "comandas_2"), orderBy("fechaIngreso", "desc"));
 
     const unsubscribe = onSnapshot(
       q,
@@ -72,7 +72,7 @@ export default function ComandasPage() {
   const handleCancelar = async (id) => {
     if (window.confirm("¿Estás seguro de que quieres cancelar esta comanda?")) {
       try {
-        const comandaRef = doc(db, "comandas", id);
+        const comandaRef = doc(db, "comandas_2", id);
         await updateDoc(comandaRef, {
           estado: "Cancelada",
         });
@@ -110,7 +110,7 @@ export default function ComandasPage() {
       );
 
       // Marcar como notificado en Firestore
-      await updateDoc(doc(db, "comandas", comanda.id), {
+      await updateDoc(doc(db, "comandas_2", comanda.id), {
         notificado: true,
         fechaNotificacion: new Date(),
       });
