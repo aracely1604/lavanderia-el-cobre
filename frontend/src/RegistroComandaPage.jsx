@@ -168,7 +168,7 @@ export default function RegistroComandaPage() {
         minute: "2-digit",
       });
 
-      // ⭐ Generar código de despacho si corresponde
+      // Generar código de despacho si corresponde
       let codigoDespacho = "";
       if (tipoEntrega === "Despacho") {
         codigoDespacho = generarCodigoEntrega();
@@ -191,20 +191,19 @@ export default function RegistroComandaPage() {
         montoTotal,
         fotos: fotosURLs,
         facturaPDF: urlFactura,
-        codigoDespacho, // 👈 nuevo campo
+        codigoDespacho,
         estado: "Activa",
       });
 
       // Enviar WhatsApp
       if (enviarWhatsapp && urlFactura) {
         try {
-          let enlaceFactura = urlFactura.split("?")[0];
           // Mensaje base
           let mensajeFinal =
             `¡Hola ${nombreCliente}!\n\n` +
             `Tu pedido ha sido recibido en *Lavandería El Cobre SPA* y ya está siendo procesado.\n\n` +
             `*Código de seguimiento:* ${numeroOrden}\n\n` +
-            `🧾 *Factura:* ${enlaceFactura}\n\n` +
+            `🧾 *Factura:* ${urlFactura}\n\n` +
             `🔗 https://lavanderia-el-cobre-spa.vercel.app\n\n` +
             `Puedes revisar el estado de tu pedido en cualquier momento usando tu código en nuestra página web.\n\n` +
             `¡Gracias por confiar en nosotros!`;
