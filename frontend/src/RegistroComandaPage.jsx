@@ -52,6 +52,7 @@ export default function RegistroComandaPage() {
     // Estados de Modales
     const [showModal, setShowModal] = useState(false); // Fotos
     const [showClientSearchModal, setShowClientSearchModal] = useState(false); // Buscar Cliente
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [fotos, setFotos] = useState([]);
 
     useEffect(() => {
@@ -157,12 +158,12 @@ export default function RegistroComandaPage() {
                             mensaje: `Hola ${nombreCliente}, Orden ${numeroOrden} recibida. Comprobante: ${urlFactura}`
                         }
                     );
-                    alert('¡Guardado y WhatsApp enviado!');
-                } catch (err) { alert('Guardado, pero falló el WhatsApp.'); }
-            } else {
-                alert('¡Guardado exitosamente!');
+            } catch (err) { console.error("Error WhatsApp", err); }
             }
 
+            // 5. MOSTRAR ALERTA BONITA (MODAL)
+            setShowSuccessModal(true);
+            
             navigate('/comandas');
         } catch (error) {
             console.error("Error:", error);

@@ -467,3 +467,66 @@
 .btn-icon-remove { background: none; border: none; color: #dc3545; font-size: 1.2em; cursor: pointer; }
 
 .monto-total { font-size: 1.8em; font-weight: 800; color: #a0522d; margin-top: 20px; }
+
+/* ... (tus estilos anteriores) ... */
+
+/* --- Estilos para el Modal de Éxito --- */
+.success-modal-content {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    text-align: center;
+    animation: popIn 0.3s ease-out;
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.success-icon-container {
+    margin-bottom: 20px;
+}
+
+.success-icon {
+    font-size: 4rem;
+    color: #28a745; /* Verde éxito */
+    display: block;
+}
+
+.success-title {
+    font-size: 1.5em;
+    font-weight: 800;
+    color: #333;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.success-message {
+    font-size: 1em;
+    color: #666;
+    margin-bottom: 30px;
+    line-height: 1.5;
+}
+
+.btn-success-confirm {
+    background-color: #28a745;
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 25px;
+    font-size: 1em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s;
+    width: 100%;
+    text-transform: uppercase;
+}
+
+.btn-success-confirm:hover {
+    background-color: #218838;
+    transform: translateY(-2px);
+}
