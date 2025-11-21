@@ -14,6 +14,7 @@ export default async function generarFactura({
   storage,
   numeroBoucher,
   servicioExpress,
+  tipoEntrega,
 }) {
   // Crear contenedor temporal (fuera de vista)
   const factura = document.createElement("div");
@@ -41,15 +42,27 @@ export default async function generarFactura({
       ORDEN DE TRABAJO
     </h3>
 
-    <p><strong>No Orden:</strong> ${numeroOrden}</p>
-    <p><strong>Fecha:</strong> ${fechaIngreso}</p>
-    <p><strong>Cliente:</strong> ${nombreCliente}</p>
-    <p><strong>Dirección:</strong> ${direccion || "—"}</p>
-    <p><strong>Teléfono:</strong> ${telefono}</p>
-    <p><strong>N° Boucher:</strong> ${numeroBoucher || "—"}</p>
-    <p><strong>Servicio Express:</strong> ${
+    <div style="display:flex; justify-content:space-between; width:100%; margin-top:5px;">
+    <div><strong>No Orden:</strong> ${numeroOrden}</div>
+    <div><strong>Fecha:</strong> ${fechaIngreso}</div>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; width:100%; margin-top:5px;">
+    <div><strong>Cliente:</strong> ${nombreCliente}</div>
+    <div><strong>Dirección:</strong> ${direccion || "—"}</div>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; width:100%; margin-top:5px;">
+    <div><strong>Teléfono:</strong> ${telefono}</div>
+    <div><strong>N° Boucher:</strong> ${numeroBoucher || "—"}</div>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; width:100%; margin-top:5px;">
+    <div><strong>Servicio Express:</strong> ${
       servicioExpress ? "Solicitado" : "No solicitado"
-    }</p>
+    }</div>
+    <div><strong>Tipo de entrega:</strong> ${tipoEntrega}</div>
+    </div>
 
 
       <table style="width:100%;border-collapse:collapse;margin-top:10px;">

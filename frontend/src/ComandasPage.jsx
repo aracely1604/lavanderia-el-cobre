@@ -18,7 +18,7 @@ export default function ComandasPage() {
   const navigate = useNavigate();
   const [comandas, setComandas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState('todos');
+  const [viewMode, setViewMode] = useState("todos");
 
   // --- ESTADOS PARA EL MODAL DE CANCELAR ---
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -35,7 +35,10 @@ export default function ComandasPage() {
 
   useEffect(() => {
     setLoading(true);
-    let q = query(collection(db, "comandas_2"), orderBy("fechaIngreso", "desc"));
+    let q = query(
+      collection(db, "comandas_2"),
+      orderBy("fechaIngreso", "desc")
+    );
 
     const unsubscribe = onSnapshot(
       q,
@@ -66,8 +69,8 @@ export default function ComandasPage() {
     return () => unsubscribe();
   }, [filtroFecha]);
 
-  const comandasRetiro = comandas.filter(c => c.tipoEntrega === 'Retiro');
-  const comandasDespacho = comandas.filter(c => c.tipoEntrega === 'Despacho');
+  const comandasRetiro = comandas.filter((c) => c.tipoEntrega === "Retiro");
+  const comandasDespacho = comandas.filter((c) => c.tipoEntrega === "Despacho");
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -107,52 +110,151 @@ export default function ComandasPage() {
   // --- FUNCIONES DE NOTIFICACIÓN ---
   const enviarNotificacion = async (comanda) => {
     try {
-      if (!comanda.telefono) { alert("La comanda no tiene teléfono registrado."); return; }
-      if (!comanda.facturaPDF) { alert("Esta comanda no tiene factura generada."); return; }
+      if (!comanda.telefono) {
+        alert("La comanda no tiene teléfono registrado.");
+        return;
+      }
+      if (!comanda.facturaPDF) {
+        alert("Esta comanda no tiene factura generada.");
+        return;
+      }
 
       const payload = {
         numero: comanda.telefono.startsWith("+")
           ? comanda.telefono
           : `+56${comanda.telefono.replace(/\D/g, "")}`,
         enlace: comanda.facturaPDF,
-        mensaje: `Hola ${comanda.nombreCliente}, El servicio correspondiente a la orden N° ${comanda.numeroOrden} se encuentra listo para retiro. Gracias por preferir Lavandería El Cobre.`,
+        mensaje:
+          `¡Hola ${comanda.nombreCliente}!\n\n` +
+          `Tu pedido correspondiente a la orden *${comanda.numeroOrden}* ya está *listo para retiro* en Lavandería El Cobre SPA.\n\n` +
+          `🔗 https://lavanderia-el-cobre-spa.vercel.app\n\n` +
+          `Presenta tu N° de Orden para retirar tu pedido.\n\n` +
+          `¡Gracias por preferir Lavandería El Cobre SPA!`,
       };
 
-      await axios.post("https://us-central1-lavanderia-el-cobre-app.cloudfunctions.net/enviarWhatsappFactura", payload);
+      await axios.post(
+        "https://us-central1-lavanderia-el-cobre-app.cloudfunctions.net/enviarWhatsappFactura",
+        payload
+      );
 
       await updateDoc(doc(db, "comandas_2", comanda.id), {
         notificado: true,
         fechaNotificacion: new Date(),
       });
-    } catch (err) { console.error("Error al notificar:", err); alert("Error al notificar."); }
+    } catch (err) {
+      console.error("Error al notificar:", err);
+      alert("Error al notificar.");
+    }
   };
 
   const enviarNotificacionAtraso15 = async (comanda) => {
     try {
-        if (!comanda.telefono) { alert("Sin teléfono"); return; }
-        if (!comanda.facturaPDF) { alert("Sin factura"); return; }
+      if (!comanda.telefono) {
+        alert("Sin teléfono");
+        return;
+      }
+      if (!comanda.facturaPDF) {
+        alert("Sin factura");
+        return;
+      }
       const payload = {
-        numero: comanda.telefono.startsWith("+") ? comanda.telefono : `+56${comanda.telefono.replace(/\D/g, "")}`,
+        numero: comanda.telefono.startsWith("+")
+          ? comanda.telefono
+          : `+56${comanda.telefono.replace(/\D/g, "")}`,
         enlace: comanda.facturaPDF,
-        mensaje: `Hola ${comanda.nombreCliente}, Estimado/a, su orden N° ${comanda.numeroOrden} lleva 15 días lista para retiro. Le solicitamos gestionar el retiro a la brevedad.`,
+        mensaje:
+          `Hola ${comanda.nombreCliente},\n\n` +
+          `Tu pedido correspondiente a la orden *${comanda.numeroOrden}* lleva *15 días* listo para retiro.\n\n` +
+          `Te solicitamos gestionar el retiro a la brevedad.\n\n` +
+          `Gracias.`,
       };
-      await axios.post("https://us-central1-lavanderia-el-cobre-app.cloudfunctions.net/enviarWhatsappFactura", payload);
-      await updateDoc(doc(db, "comandas_2", comanda.id), { notificado15: true, fechaNotificacion15: new Date() });
-    } catch (err) { console.error(err); alert("Error al notificar"); }
+      await axios.post(
+        "https://us-central1-lavanderia-el-cobre-app.cloudfunctions.net/enviarWhatsappFactura",
+        payload
+      );
+      await updateDoc(doc(db, "comandas_2", comanda.id), {
+        notificado15: true,
+        fechaNotificacion15: new Date(),
+      });
+    } catch (err) {
+      console.error(err);
+      alert("Error al notificar");
+    }
   };
 
   const enviarNotificacionAtraso30 = async (comanda) => {
     try {
-        if (!comanda.telefono) { alert("Sin teléfono"); return; }
-        if (!comanda.facturaPDF) { alert("Sin factura"); return; }
+      if (!comanda.telefono) {
+        alert("Sin teléfono");
+        return;
+      }
+      if (!comanda.facturaPDF) {
+        alert("Sin factura");
+        return;
+      }
       const payload = {
-        numero: comanda.telefono.startsWith("+") ? comanda.telefono : `+56${comanda.telefono.replace(/\D/g, "")}`,
+        numero: comanda.telefono.startsWith("+")
+          ? comanda.telefono
+          : `+56${comanda.telefono.replace(/\D/g, "")}`,
         enlace: comanda.facturaPDF,
-        mensaje: `Hola ${comanda.nombreCliente}, Estimado/a, su orden N° ${comanda.numeroOrden} lleva 30 días sin ser retirada. La empresa no se hace responsable por prendas después de este periodo.`,
+        mensaje:
+          `Hola ${comanda.nombreCliente},\n\n` +
+          `Tu pedido correspondiente a la orden *${comanda.numeroOrden}* lleva *30 días* sin ser retirado.\n\n` +
+          `La empresa no se hace responsable por prendas después de este periodo.\n\n` +
+          `Gracias.`,
       };
-      await axios.post("https://us-central1-lavanderia-el-cobre-app.cloudfunctions.net/enviarWhatsappFactura", payload);
-      await updateDoc(doc(db, "comandas_2", comanda.id), { notificado30: true, fechaNotificacion30: new Date() });
-    } catch (err) { console.error(err); alert("Error al notificar"); }
+      await axios.post(
+        "https://us-central1-lavanderia-el-cobre-app.cloudfunctions.net/enviarWhatsappFactura",
+        payload
+      );
+      await updateDoc(doc(db, "comandas_2", comanda.id), {
+        notificado30: true,
+        fechaNotificacion30: new Date(),
+      });
+    } catch (err) {
+      console.error(err);
+      alert("Error al notificar");
+    }
+  };
+
+  const enviarNotificacionDespachoEnCamino = async (comanda) => {
+    try {
+      if (!comanda.telefono) {
+        alert("La comanda no tiene teléfono registrado.");
+        return;
+      }
+      if (!comanda.codigoDespacho) {
+        alert("Esta comanda no tiene código de despacho registrado.");
+        return;
+      }
+
+      const payload = {
+        numero: comanda.telefono.startsWith("+")
+          ? comanda.telefono
+          : `+56${comanda.telefono.replace(/\D/g, "")}`,
+        enlace: comanda.facturaPDF || "",
+        mensaje:
+          `¡Hola ${comanda.nombreCliente}!\n\n` +
+          `Tu pedido correspondiente a la orden *${comanda.numeroOrden}* ya va en camino 🚚.\n\n` +
+          `*Código de entrega:* ${comanda.codigoDespacho}\n\n` +
+          `🔗 https://lavanderia-el-cobre-spa.vercel.app\n\n` +
+          `Por favor ten este código a mano cuando recibas el despacho.\n\n` +
+          `¡Gracias por preferir Lavandería El Cobre SPA!`,
+      };
+
+      await axios.post(
+        "https://us-central1-lavanderia-el-cobre-app.cloudfunctions.net/enviarWhatsappFactura",
+        payload
+      );
+
+      await updateDoc(doc(db, "comandas_2", comanda.id), {
+        notificadoEnCamino: true,
+        fechaNotificacionEnCamino: new Date(),
+      });
+    } catch (err) {
+      console.error("Error al enviar notificación de despacho:", err);
+      alert("Error al notificar despacho.");
+    }
   };
 
   const handleDescargarFactura = (urlFactura) => {
@@ -169,13 +271,15 @@ export default function ComandasPage() {
       fontWeight: "bold",
       backgroundColor: isActive ? "#004080" : "#e0e0e0",
       color: isActive ? "white" : "#333",
-      transition: "all 0.2s"
+      transition: "all 0.2s",
     };
   };
 
   const renderFila = (comanda, mostrarBotonesNotificacion) => {
     const isCancelada = comanda.estado === "Cancelada";
-    const rowStyle = isCancelada ? { backgroundColor: "#ffebee", color: "#999" } : {};
+    const rowStyle = isCancelada
+      ? { backgroundColor: "#ffebee", color: "#999" }
+      : {};
 
     return (
       <tr key={comanda.id} style={rowStyle}>
@@ -209,6 +313,25 @@ export default function ComandasPage() {
           >
             DESCARGAR
           </button>
+          {comanda.tipoEntrega === "Despacho" && (
+            <button
+              className="btn-accion btn-notificar"
+              onClick={() => enviarNotificacionDespachoEnCamino(comanda)}
+              disabled={comanda.notificadoEnCamino || isCancelada}
+              style={{
+                opacity: isCancelada
+                  ? 0.5
+                  : comanda.notificadoEnCamino
+                  ? 0.6
+                  : 1,
+                backgroundColor: comanda.notificadoEnCamino
+                  ? "#28a745"
+                  : "#d68a31",
+              }}
+            >
+              {comanda.notificadoEnCamino ? "✔ EN CAMINO" : "EN CAMINO"}
+            </button>
+          )}
 
           {mostrarBotonesNotificacion && (
             <>
@@ -274,7 +397,14 @@ export default function ComandasPage() {
               ✕
             </button>
           ) : (
-            <span style={{ color: "red", fontWeight: "bold", fontSize: "0.7em", marginLeft: "5px" }}>
+            <span
+              style={{
+                color: "red",
+                fontWeight: "bold",
+                fontSize: "0.7em",
+                marginLeft: "5px",
+              }}
+            >
               CANCELADA
             </span>
           )}
@@ -288,37 +418,52 @@ export default function ComandasPage() {
       {/* --- MODAL PERSONALIZADO DE CONFIRMACIÓN --- */}
       {showCancelModal && (
         <div className="modal-overlay">
-          <div className="modal-content" style={{ textAlign: 'center', maxWidth: '400px' }}>
-            <h3 style={{ color: '#dc3545', marginTop: 0 }}>⚠️ Cancelar Comanda</h3>
-            <p style={{ fontSize: '1.1em', margin: '20px 0' }}>
-              ¿Estás seguro de que quieres cancelar esta comanda?<br/>
-              <span style={{ fontSize: '0.9em', color: '#666' }}>Esta acción marcará la orden como cancelada.</span>
+          <div
+            className="modal-content"
+            style={{ textAlign: "center", maxWidth: "400px" }}
+          >
+            <h3 style={{ color: "#dc3545", marginTop: 0 }}>
+              ⚠️ Cancelar Comanda
+            </h3>
+            <p style={{ fontSize: "1.1em", margin: "20px 0" }}>
+              ¿Estás seguro de que quieres cancelar esta comanda?
+              <br />
+              <span style={{ fontSize: "0.9em", color: "#666" }}>
+                Esta acción marcará la orden como cancelada.
+              </span>
             </p>
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
-              <button 
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                justifyContent: "center",
+                marginTop: "20px",
+              }}
+            >
+              <button
                 onClick={cerrarModal}
                 style={{
-                  padding: '10px 20px',
-                  border: '1px solid #ccc',
-                  background: 'white',
-                  borderRadius: '5px',
-                  cursor: 'pointer',
-                  fontSize: '1rem'
+                  padding: "10px 20px",
+                  border: "1px solid #ccc",
+                  background: "white",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                  fontSize: "1rem",
                 }}
               >
                 No, Regresar
               </button>
-              <button 
+              <button
                 onClick={confirmarCancelacion}
                 style={{
-                  padding: '10px 20px',
-                  border: 'none',
-                  background: '#dc3545',
-                  color: 'white',
-                  borderRadius: '5px',
-                  cursor: 'pointer',
-                  fontWeight: 'bold',
-                  fontSize: '1rem'
+                  padding: "10px 20px",
+                  border: "none",
+                  background: "#dc3545",
+                  color: "white",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                  fontSize: "1rem",
                 }}
               >
                 Sí, Cancelar
@@ -341,28 +486,51 @@ export default function ComandasPage() {
             CERRAR SESIÓN
           </button>
 
-          <div className="filters" style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+          <div
+            className="filters"
+            style={{ display: "flex", gap: "15px", alignItems: "center" }}
+          >
             <input
               type="date"
               value={filtroFecha}
               onChange={(e) => setFiltroFecha(e.target.value)}
               className="filter-input"
             />
-            <div style={{ display: 'flex', gap: '5px' }}>
-              <button onClick={() => setViewMode('todos')} style={getFilterButtonStyle('todos')}>TODOS</button>
-              <button onClick={() => setViewMode('retiro')} style={getFilterButtonStyle('retiro')}>RETIRO</button>
-              <button onClick={() => setViewMode('despacho')} style={getFilterButtonStyle('despacho')}>DESPACHO</button>
+            <div style={{ display: "flex", gap: "5px" }}>
+              <button
+                onClick={() => setViewMode("todos")}
+                style={getFilterButtonStyle("todos")}
+              >
+                TODOS
+              </button>
+              <button
+                onClick={() => setViewMode("retiro")}
+                style={getFilterButtonStyle("retiro")}
+              >
+                RETIRO
+              </button>
+              <button
+                onClick={() => setViewMode("despacho")}
+                style={getFilterButtonStyle("despacho")}
+              >
+                DESPACHO
+              </button>
             </div>
           </div>
 
-          <button onClick={() => navigate("/registro-comanda")} className="btn-crear-comanda">
+          <button
+            onClick={() => navigate("/registro-comanda")}
+            className="btn-crear-comanda"
+          >
             CREAR COMANDA
           </button>
         </div>
 
-        {(viewMode === 'todos' || viewMode === 'retiro') && (
+        {(viewMode === "todos" || viewMode === "retiro") && (
           <>
-            <h2 style={{ marginTop: '20px', color: '#004080' }}>📦 COMANDAS PARA RETIRO (LOCAL)</h2>
+            <h2 style={{ marginTop: "20px", color: "#004080" }}>
+              📦 COMANDAS PARA RETIRO (LOCAL)
+            </h2>
             <div className="table-container">
               <table>
                 <thead>
@@ -378,9 +546,22 @@ export default function ComandasPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {loading && <tr><td colSpan="8" style={{textAlign:'center'}}>Cargando...</td></tr>}
+                  {loading && (
+                    <tr>
+                      <td colSpan="8" style={{ textAlign: "center" }}>
+                        Cargando...
+                      </td>
+                    </tr>
+                  )}
                   {!loading && comandasRetiro.length === 0 && (
-                    <tr><td colSpan="8" style={{textAlign:'center', padding:'20px'}}>No hay comandas de Retiro.</td></tr>
+                    <tr>
+                      <td
+                        colSpan="8"
+                        style={{ textAlign: "center", padding: "20px" }}
+                      >
+                        No hay comandas de Retiro.
+                      </td>
+                    </tr>
                   )}
                   {comandasRetiro.map((comanda) => renderFila(comanda, true))}
                 </tbody>
@@ -389,10 +570,12 @@ export default function ComandasPage() {
           </>
         )}
 
-        {(viewMode === 'todos' || viewMode === 'despacho') && (
+        {(viewMode === "todos" || viewMode === "despacho") && (
           <>
-            <h2 style={{ marginTop: '40px', color: '#d68a31' }}>🚚 COMANDAS PARA DESPACHO</h2>
-            <div className="table-container" style={{ marginBottom: '50px' }}>
+            <h2 style={{ marginTop: "40px", color: "#d68a31" }}>
+              🚚 COMANDAS PARA DESPACHO
+            </h2>
+            <div className="table-container" style={{ marginBottom: "50px" }}>
               <table>
                 <thead>
                   <tr>
@@ -407,11 +590,26 @@ export default function ComandasPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {loading && <tr><td colSpan="8" style={{textAlign:'center'}}>Cargando...</td></tr>}
-                  {!loading && comandasDespacho.length === 0 && (
-                    <tr><td colSpan="8" style={{textAlign:'center', padding:'20px'}}>No hay comandas de Despacho.</td></tr>
+                  {loading && (
+                    <tr>
+                      <td colSpan="8" style={{ textAlign: "center" }}>
+                        Cargando...
+                      </td>
+                    </tr>
                   )}
-                  {comandasDespacho.map((comanda) => renderFila(comanda, false))}
+                  {!loading && comandasDespacho.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan="8"
+                        style={{ textAlign: "center", padding: "20px" }}
+                      >
+                        No hay comandas de Despacho.
+                      </td>
+                    </tr>
+                  )}
+                  {comandasDespacho.map((comanda) =>
+                    renderFila(comanda, false)
+                  )}
                 </tbody>
               </table>
             </div>
