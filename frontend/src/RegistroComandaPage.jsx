@@ -7,7 +7,6 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import './RegistroComanda.css';
 import logoSrc from './assets/Logo lavanderia.jpeg';
 import generarFactura from "./FacturaGenerador";
-// Importamos el módulo de buscar cliente que faltaba
 import ModuloClienteRecientes from "./ModuloClienteReciente";
 
 export default function RegistroComandaPage() {
@@ -49,10 +48,14 @@ export default function RegistroComandaPage() {
     const [montoTotal, setMontoTotal] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
     
-    // Estados de Modales
-    const [showModal, setShowModal] = useState(false); // Fotos
+    // --- ESTADOS DE MODALES ---
+    const [showModalFotos, setShowModalFotos] = useState(false); // Modal adjuntar fotos
     const [showClientSearchModal, setShowClientSearchModal] = useState(false); // Buscar Cliente
+    
+    // NUEVOS MODALES (Error y Éxito)
+    const [showErrorModal, setShowErrorModal] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+
     const [fotos, setFotos] = useState([]);
 
     useEffect(() => {
@@ -95,15 +98,16 @@ export default function RegistroComandaPage() {
         setNombreCliente(clientData.nombreCliente || "");
         setDireccion(clientData.direccion || "");
         setTipoCliente(clientData.tipoCliente || "Particular");
-        // alert(`Cliente encontrado: ${clientData.nombreCliente}`);
     };
 
     // --- Guardar ---
     const handleGuardar = async (enviarWhatsapp = true) => {
+        // 1. VALIDACIÓN: Si falta nombre o teléfono, mostramos el Modal de Error
         if (!nombreCliente || !telefono) {
-            alert('Falta nombre o teléfono.');
-            return;
+            setShowErrorModal(true);
+            return; // Detenemos la función aquí
         }
+
         setIsSubmitting(true);
 
         try {
@@ -158,19 +162,24 @@ export default function RegistroComandaPage() {
                             mensaje: `Hola ${nombreCliente}, Orden ${numeroOrden} recibida. Comprobante: ${urlFactura}`
                         }
                     );
-            } catch (err) { console.error("Error WhatsApp", err); }
+                } catch (err) { console.error("Error WhatsApp", err); }
             }
 
-            // 5. MOSTRAR ALERTA BONITA (MODAL)
+            // 2. ÉXITO: Mostramos el modal de éxito (NO navegamos todavía)
             setShowSuccessModal(true);
             
-            navigate('/comandas');
         } catch (error) {
             console.error("Error:", error);
-            alert('Error al guardar.');
+            alert('Ocurrió un error al guardar en la base de datos.');
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    // Función para cerrar el modal de éxito y redirigir
+    const handleCloseSuccess = () => {
+        setShowSuccessModal(false);
+        navigate('/comandas');
     };
 
     const handleFileSelect = (event) => {
@@ -181,6 +190,60 @@ export default function RegistroComandaPage() {
 
     return (
         <div className="registro-container">
+            {/* --- MODAL DE ERROR (FALTA DATOS) --- */}
+            {showErrorModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content" style={{ textAlign: 'center', maxWidth: '400px', borderTop: '5px solid #dc3545' }}>
+                        <h3 style={{ color: '#dc3545', marginTop: 0 }}>⚠️ Datos Incompletos</h3>
+                        <p style={{ fontSize: '1.1em', margin: '20px 0', color: '#333' }}>
+                           Falta ingresar el <b>Nombre del Cliente</b> o el <b>Teléfono</b>.
+                        </p>
+                        <button 
+                            onClick={() => setShowErrorModal(false)}
+                            style={{
+                                padding: '10px 25px',
+                                border: 'none',
+                                background: '#004080', // Color azul corporativo
+                                color: 'white',
+                                borderRadius: '5px',
+                                cursor: 'pointer',
+                                fontWeight: 'bold',
+                                fontSize: '1rem'
+                            }}
+                        >
+                            Entendido
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* --- MODAL DE ÉXITO (GUARDADO) --- */}
+            {showSuccessModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content" style={{ textAlign: 'center', maxWidth: '400px', borderTop: '5px solid #28a745' }}>
+                        <h3 style={{ color: '#28a745', marginTop: 0 }}>✅ ¡Comanda Guardada!</h3>
+                        <p style={{ fontSize: '1.1em', margin: '20px 0', color: '#333' }}>
+                            Guardado y enviado a WhatsApp correctamente.
+                        </p>
+                        <button 
+                            onClick={handleCloseSuccess}
+                            style={{
+                                padding: '10px 25px',
+                                border: 'none',
+                                background: '#28a745', // Verde éxito
+                                color: 'white',
+                                borderRadius: '5px',
+                                cursor: 'pointer',
+                                fontWeight: 'bold',
+                                fontSize: '1rem'
+                            }}
+                        >
+                            Aceptar
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Modal Buscar Cliente */}
             <ModuloClienteRecientes
                 isOpen={showClientSearchModal}
@@ -189,7 +252,7 @@ export default function RegistroComandaPage() {
             />
 
             {/* Modal Fotos */}
-            {showModal && (
+            {showModalFotos && (
                 <div className="modal-overlay">
                     <div className="modal-content">
                         <h3 className="modal-title">Adjuntar Fotos</h3>
@@ -201,8 +264,8 @@ export default function RegistroComandaPage() {
                             {fotos.map((f, i) => <img key={i} src={f.preview} className="foto-preview" alt="p" />)}
                         </div>
                         <div className="modal-actions">
-                            <button className="btn-modal-cancel" onClick={() => { setFotos([]); setShowModal(false); }}>CANCELAR</button>
-                            <button className="btn-modal-confirm" onClick={() => setShowModal(false)}>CONFIRMAR</button>
+                            <button className="btn-modal-cancel" onClick={() => { setFotos([]); setShowModalFotos(false); }}>CANCELAR</button>
+                            <button className="btn-modal-confirm" onClick={() => setShowModalFotos(false)}>CONFIRMAR</button>
                         </div>
                     </div>
                 </div>
@@ -215,7 +278,7 @@ export default function RegistroComandaPage() {
                     <span className="registro-header-title">Lavandería El Cobre Spa</span>
                 </div>
                 <div className="registro-header-actions">
-                    <button className="btn-header btn-adjuntar" onClick={() => setShowModal(true)}>
+                    <button className="btn-header btn-adjuntar" onClick={() => setShowModalFotos(true)}>
                         📎 ADJUNTAR FOTO
                     </button>
                     
@@ -260,11 +323,11 @@ export default function RegistroComandaPage() {
                 <div className="form-row">
                     <div className="form-group" style={{flex: 2}}>
                         <label>NOMBRE CLIENTE *</label>
-                        <input type="text" value={nombreCliente} onChange={e => setNombreCliente(e.target.value)} placeholder="Ej: Juan Pérez" required />
+                        <input type="text" value={nombreCliente} onChange={e => setNombreCliente(e.target.value)} placeholder="Ej: Juan Pérez" />
                     </div>
                     <div className="form-group">
                         <label>TELÉFONO *</label>
-                        <input type="tel" value={telefono} onChange={e => setTelefono(e.target.value)} placeholder="+569 1234 5678" required />
+                        <input type="tel" value={telefono} onChange={e => setTelefono(e.target.value)} placeholder="+569 1234 5678" />
                     </div>
                 </div>
 

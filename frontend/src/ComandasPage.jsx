@@ -18,6 +18,11 @@ export default function ComandasPage() {
   const navigate = useNavigate();
   const [comandas, setComandas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState('todos');
+
+  // --- ESTADOS PARA EL MODAL DE CANCELAR ---
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [idToDelete, setIdToDelete] = useState(null);
 
   // Estado para la FECHA
   const [filtroFecha, setFiltroFecha] = useState(() => {
@@ -30,8 +35,6 @@ export default function ComandasPage() {
 
   useEffect(() => {
     setLoading(true);
-
-    // Consulta básica: Trae todo ordenado por fecha
     let q = query(collection(db, "comandas_2"), orderBy("fechaIngreso", "desc"));
 
     const unsubscribe = onSnapshot(
@@ -42,7 +45,6 @@ export default function ComandasPage() {
           ...doc.data(),
         }));
 
-        // Filtramos aquí solo por la fecha seleccionada
         const comandasFiltradas = comandasList.filter((comanda) => {
           if (!filtroFecha) return true;
           const fechaComanda = comanda.fechaIngreso
@@ -64,10 +66,7 @@ export default function ComandasPage() {
     return () => unsubscribe();
   }, [filtroFecha]);
 
-  // --- SEPARACIÓN DE LISTAS ---
-  // Retiro: tendrá todos los botones
   const comandasRetiro = comandas.filter(c => c.tipoEntrega === 'Retiro');
-  // Despacho: tendrá solo descargar y cancelar
   const comandasDespacho = comandas.filter(c => c.tipoEntrega === 'Despacho');
 
   const handleLogout = async () => {
@@ -75,30 +74,41 @@ export default function ComandasPage() {
     navigate("/");
   };
 
-  const handleCancelar = async (id) => {
-    if (window.confirm("¿Estás seguro de que quieres cancelar esta comanda?")) {
-      try {
-        const comandaRef = doc(db, "comandas_2", id);
-        await updateDoc(comandaRef, {
-          estado: "Cancelada",
-        });
-      } catch (error) {
-        console.error("Error al cancelar:", error);
-        alert("Error al cancelar la comanda.");
-      }
+  // 1. AL HACER CLIC EN LA "X", SOLO ABRIMOS EL MODAL
+  const handleClickCancelar = (id) => {
+    setIdToDelete(id);
+    setShowCancelModal(true);
+  };
+
+  // 2. SI CONFIRMA EN EL MODAL, EJECUTAMOS LA LÓGICA
+  const confirmarCancelacion = async () => {
+    if (!idToDelete) return;
+
+    try {
+      const comandaRef = doc(db, "comandas_2", idToDelete);
+      await updateDoc(comandaRef, {
+        estado: "Cancelada",
+      });
+      // Cerramos modal y limpiamos ID
+      setShowCancelModal(false);
+      setIdToDelete(null);
+    } catch (error) {
+      console.error("Error al cancelar:", error);
+      alert("Error al cancelar la comanda.");
     }
   };
 
+  // 3. SI CANCELA O CIERRA
+  const cerrarModal = () => {
+    setShowCancelModal(false);
+    setIdToDelete(null);
+  };
+
+  // --- FUNCIONES DE NOTIFICACIÓN ---
   const enviarNotificacion = async (comanda) => {
     try {
-      if (!comanda.telefono) {
-        alert("La comanda no tiene teléfono registrado.");
-        return;
-      }
-      if (!comanda.facturaPDF) {
-        alert("Esta comanda no tiene factura generada.");
-        return;
-      }
+      if (!comanda.telefono) { alert("La comanda no tiene teléfono registrado."); return; }
+      if (!comanda.facturaPDF) { alert("Esta comanda no tiene factura generada."); return; }
 
       const payload = {
         numero: comanda.telefono.startsWith("+")
@@ -108,40 +118,26 @@ export default function ComandasPage() {
         mensaje: `Hola ${comanda.nombreCliente}, El servicio correspondiente a la orden N° ${comanda.numeroOrden} se encuentra listo para retiro. Gracias por preferir Lavandería El Cobre.`,
       };
 
-      await axios.post(
-        "https://us-central1-lavanderia-el-cobre-app.cloudfunctions.net/enviarWhatsappFactura",
-        payload
-      );
+      await axios.post("https://us-central1-lavanderia-el-cobre-app.cloudfunctions.net/enviarWhatsappFactura", payload);
 
       await updateDoc(doc(db, "comandas_2", comanda.id), {
         notificado: true,
         fechaNotificacion: new Date(),
       });
-    } catch (err) {
-      console.error("Error al enviar notificación:", err);
-      alert("Error al enviar la notificación.");
-    }
+    } catch (err) { console.error("Error al notificar:", err); alert("Error al notificar."); }
   };
 
   const enviarNotificacionAtraso15 = async (comanda) => {
     try {
         if (!comanda.telefono) { alert("Sin teléfono"); return; }
         if (!comanda.facturaPDF) { alert("Sin factura"); return; }
-
       const payload = {
-        numero: comanda.telefono.startsWith("+")
-          ? comanda.telefono
-          : `+56${comanda.telefono.replace(/\D/g, "")}`,
+        numero: comanda.telefono.startsWith("+") ? comanda.telefono : `+56${comanda.telefono.replace(/\D/g, "")}`,
         enlace: comanda.facturaPDF,
         mensaje: `Hola ${comanda.nombreCliente}, Estimado/a, su orden N° ${comanda.numeroOrden} lleva 15 días lista para retiro. Le solicitamos gestionar el retiro a la brevedad.`,
       };
-
       await axios.post("https://us-central1-lavanderia-el-cobre-app.cloudfunctions.net/enviarWhatsappFactura", payload);
-
-      await updateDoc(doc(db, "comandas_2", comanda.id), {
-        notificado15: true,
-        fechaNotificacion15: new Date(),
-      });
+      await updateDoc(doc(db, "comandas_2", comanda.id), { notificado15: true, fechaNotificacion15: new Date() });
     } catch (err) { console.error(err); alert("Error al notificar"); }
   };
 
@@ -149,21 +145,13 @@ export default function ComandasPage() {
     try {
         if (!comanda.telefono) { alert("Sin teléfono"); return; }
         if (!comanda.facturaPDF) { alert("Sin factura"); return; }
-
       const payload = {
-        numero: comanda.telefono.startsWith("+")
-          ? comanda.telefono
-          : `+56${comanda.telefono.replace(/\D/g, "")}`,
+        numero: comanda.telefono.startsWith("+") ? comanda.telefono : `+56${comanda.telefono.replace(/\D/g, "")}`,
         enlace: comanda.facturaPDF,
         mensaje: `Hola ${comanda.nombreCliente}, Estimado/a, su orden N° ${comanda.numeroOrden} lleva 30 días sin ser retirada. La empresa no se hace responsable por prendas después de este periodo.`,
       };
-
       await axios.post("https://us-central1-lavanderia-el-cobre-app.cloudfunctions.net/enviarWhatsappFactura", payload);
-
-      await updateDoc(doc(db, "comandas_2", comanda.id), {
-        notificado30: true,
-        fechaNotificacion30: new Date(),
-      });
+      await updateDoc(doc(db, "comandas_2", comanda.id), { notificado30: true, fechaNotificacion30: new Date() });
     } catch (err) { console.error(err); alert("Error al notificar"); }
   };
 
@@ -171,8 +159,20 @@ export default function ComandasPage() {
     window.open(urlFactura, "_blank");
   };
 
-  // Renderizado de fila reutilizable
-  // mostrarBotonesNotificacion: TRUE para Retiro, FALSE para Despacho
+  const getFilterButtonStyle = (mode) => {
+    const isActive = viewMode === mode;
+    return {
+      padding: "8px 16px",
+      border: "none",
+      borderRadius: "5px",
+      cursor: "pointer",
+      fontWeight: "bold",
+      backgroundColor: isActive ? "#004080" : "#e0e0e0",
+      color: isActive ? "white" : "#333",
+      transition: "all 0.2s"
+    };
+  };
+
   const renderFila = (comanda, mostrarBotonesNotificacion) => {
     const isCancelada = comanda.estado === "Cancelada";
     const rowStyle = isCancelada ? { backgroundColor: "#ffebee", color: "#999" } : {};
@@ -210,7 +210,6 @@ export default function ComandasPage() {
             DESCARGAR
           </button>
 
-          {/* SOLO SE MUESTRAN SI mostrarBotonesNotificacion ES TRUE (RETIRO) */}
           {mostrarBotonesNotificacion && (
             <>
               <button
@@ -254,7 +253,8 @@ export default function ComandasPage() {
           {!isCancelada ? (
             <button
               className="btn-icon-cancel"
-              onClick={() => handleCancelar(comanda.id)}
+              // AQUÍ CAMBIAMOS: En vez de borrar directo, abrimos modal
+              onClick={() => handleClickCancelar(comanda.id)}
               title="Cancelar pedido"
               style={{
                 marginLeft: "5px",
@@ -285,6 +285,49 @@ export default function ComandasPage() {
 
   return (
     <div className="comandas-container">
+      {/* --- MODAL PERSONALIZADO DE CONFIRMACIÓN --- */}
+      {showCancelModal && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ textAlign: 'center', maxWidth: '400px' }}>
+            <h3 style={{ color: '#dc3545', marginTop: 0 }}>⚠️ Cancelar Comanda</h3>
+            <p style={{ fontSize: '1.1em', margin: '20px 0' }}>
+              ¿Estás seguro de que quieres cancelar esta comanda?<br/>
+              <span style={{ fontSize: '0.9em', color: '#666' }}>Esta acción marcará la orden como cancelada.</span>
+            </p>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
+              <button 
+                onClick={cerrarModal}
+                style={{
+                  padding: '10px 20px',
+                  border: '1px solid #ccc',
+                  background: 'white',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontSize: '1rem'
+                }}
+              >
+                No, Regresar
+              </button>
+              <button 
+                onClick={confirmarCancelacion}
+                style={{
+                  padding: '10px 20px',
+                  border: 'none',
+                  background: '#dc3545',
+                  color: 'white',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '1rem'
+                }}
+              >
+                Sí, Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <header className="auth-header">
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <img src={logoSrc} alt="Logo" className="auth-logo" />
@@ -298,13 +341,18 @@ export default function ComandasPage() {
             CERRAR SESIÓN
           </button>
 
-          <div className="filters">
+          <div className="filters" style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
             <input
               type="date"
               value={filtroFecha}
               onChange={(e) => setFiltroFecha(e.target.value)}
               className="filter-input"
             />
+            <div style={{ display: 'flex', gap: '5px' }}>
+              <button onClick={() => setViewMode('todos')} style={getFilterButtonStyle('todos')}>TODOS</button>
+              <button onClick={() => setViewMode('retiro')} style={getFilterButtonStyle('retiro')}>RETIRO</button>
+              <button onClick={() => setViewMode('despacho')} style={getFilterButtonStyle('despacho')}>DESPACHO</button>
+            </div>
           </div>
 
           <button onClick={() => navigate("/registro-comanda")} className="btn-crear-comanda">
@@ -312,60 +360,63 @@ export default function ComandasPage() {
           </button>
         </div>
 
-        {/* === SECCIÓN 1: RETIRO (TODOS LOS BOTONES) === */}
-        <h2 style={{ marginTop: '20px', color: '#004080' }}>📦 COMANDAS PARA RETIRO (LOCAL)</h2>
-        <div className="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th></th>
-                <th>N° ORDEN</th>
-                <th>CLIENTE</th>
-                <th>TIPO</th>
-                <th>FECHA</th>
-                <th>HORA</th>
-                <th>TOTAL</th>
-                <th>ACCIONES</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading && <tr><td colSpan="8" style={{textAlign:'center'}}>Cargando...</td></tr>}
-              {!loading && comandasRetiro.length === 0 && (
-                <tr><td colSpan="8" style={{textAlign:'center', padding:'20px'}}>No hay comandas de Retiro para esta fecha.</td></tr>
-              )}
-              {/* Retiro: Pasa TRUE para ver todos los botones */}
-              {comandasRetiro.map((comanda) => renderFila(comanda, true))}
-            </tbody>
-          </table>
-        </div>
+        {(viewMode === 'todos' || viewMode === 'retiro') && (
+          <>
+            <h2 style={{ marginTop: '20px', color: '#004080' }}>📦 COMANDAS PARA RETIRO (LOCAL)</h2>
+            <div className="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>N° ORDEN</th>
+                    <th>CLIENTE</th>
+                    <th>TIPO</th>
+                    <th>FECHA</th>
+                    <th>HORA</th>
+                    <th>TOTAL</th>
+                    <th>ACCIONES</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading && <tr><td colSpan="8" style={{textAlign:'center'}}>Cargando...</td></tr>}
+                  {!loading && comandasRetiro.length === 0 && (
+                    <tr><td colSpan="8" style={{textAlign:'center', padding:'20px'}}>No hay comandas de Retiro.</td></tr>
+                  )}
+                  {comandasRetiro.map((comanda) => renderFila(comanda, true))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
 
-        {/* === SECCIÓN 2: DESPACHO (SOLO DESCARGAR Y X) === */}
-        <h2 style={{ marginTop: '40px', color: '#d68a31' }}>🚚 COMANDAS PARA DESPACHO</h2>
-        <div className="table-container" style={{ marginBottom: '50px' }}>
-          <table>
-            <thead>
-              <tr>
-                <th></th>
-                <th>N° ORDEN</th>
-                <th>CLIENTE</th>
-                <th>TIPO</th>
-                <th>FECHA</th>
-                <th>HORA</th>
-                <th>TOTAL</th>
-                <th>ACCIONES</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading && <tr><td colSpan="8" style={{textAlign:'center'}}>Cargando...</td></tr>}
-              {!loading && comandasDespacho.length === 0 && (
-                <tr><td colSpan="8" style={{textAlign:'center', padding:'20px'}}>No hay comandas de Despacho para esta fecha.</td></tr>
-              )}
-              {/* Despacho: Pasa FALSE para ocultar notificaciones */}
-              {comandasDespacho.map((comanda) => renderFila(comanda, false))}
-            </tbody>
-          </table>
-        </div>
-
+        {(viewMode === 'todos' || viewMode === 'despacho') && (
+          <>
+            <h2 style={{ marginTop: '40px', color: '#d68a31' }}>🚚 COMANDAS PARA DESPACHO</h2>
+            <div className="table-container" style={{ marginBottom: '50px' }}>
+              <table>
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>N° ORDEN</th>
+                    <th>CLIENTE</th>
+                    <th>TIPO</th>
+                    <th>FECHA</th>
+                    <th>HORA</th>
+                    <th>TOTAL</th>
+                    <th>ACCIONES</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading && <tr><td colSpan="8" style={{textAlign:'center'}}>Cargando...</td></tr>}
+                  {!loading && comandasDespacho.length === 0 && (
+                    <tr><td colSpan="8" style={{textAlign:'center', padding:'20px'}}>No hay comandas de Despacho.</td></tr>
+                  )}
+                  {comandasDespacho.map((comanda) => renderFila(comanda, false))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
       </main>
     </div>
   );
