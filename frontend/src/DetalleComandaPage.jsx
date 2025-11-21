@@ -19,7 +19,7 @@ export default function DetalleComandaPage() {
           setComanda({ id: docSnap.id, ...docSnap.data() });
         } else {
           alert("No se encontró la comanda");
-          navigate('/comandas');
+          navigate('/');
         }
       } catch (error) {
         console.error("Error:", error);
@@ -51,7 +51,7 @@ export default function DetalleComandaPage() {
       <div className="detalle-container">
         {/* --- ENCABEZADO --- */}
         <div className="detalle-header">
-          <button className="btn-back" onClick={() => navigate('/comandas')}>
+          <button className="btn-back" onClick={() => navigate('/')}>
             VOLVER
           </button>
           <div className="header-info">

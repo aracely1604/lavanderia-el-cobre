@@ -241,7 +241,7 @@ export default function RegistroComandaPage() {
   // Función para cerrar el modal de éxito y redirigir
   const handleCloseSuccess = () => {
     setShowSuccessModal(false);
-    navigate("/comandas");
+    navigate("/");
   };
 
   const handleFileSelect = (event) => {
@@ -410,7 +410,7 @@ export default function RegistroComandaPage() {
       </header>
 
       <div className="btn-back-container">
-        <button className="btn-back" onClick={() => navigate("/comandas")}>
+        <button className="btn-back" onClick={() => navigate("/")}>
           REGRESAR AL LISTADO
         </button>
       </div>
