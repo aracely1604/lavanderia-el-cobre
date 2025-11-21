@@ -14,7 +14,7 @@ export default function RegistroComandaPage() {
 
   // --- CONSTANTES ---
   const PORCENTAJE_EXPRESS = 0.5;
-  const COSTO_DESPACHO = 1500;
+  const COSTO_DESPACHO = 3000;
 
   const generarNumeroOrden = () => {
     const hoy = new Date();
@@ -577,7 +577,7 @@ export default function RegistroComandaPage() {
                     onChange={(e) =>
                       handlePrendaChange(i, "valor", e.target.value)
                     }
-                    placeholder="$"
+                    placeholder="$ 0"
                   />
                 </td>
                 <td>
