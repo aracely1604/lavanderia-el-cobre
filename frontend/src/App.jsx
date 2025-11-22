@@ -8,7 +8,7 @@ import RegistroComandaPage from './RegistroComandaPage';
 import DetalleComandaPage from './DetalleComandaPage';
 
 // URL de la Intranet Principal
-const MAIN_INTRANET_URL = "https://lavanderia-cobre-landingpage.vercel.app/intranet/dashboard";
+const MAIN_INTRANET_URL = "https://lavanderia-el-cobre.vercel.app/";
 
 // --- COMPONENTE DE PROTECCIÓN (Lógica y Estilo del Repo TSX) ---
 const ProtectedRoute = ({ children }) => {
