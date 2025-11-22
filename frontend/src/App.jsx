@@ -29,8 +29,7 @@ function App() {
       <Routes>
         {/* Rutas protegidas por la simulación */}
         <Route 
-          path="/" 
-          element={isLoggedIn ? <ComandasPage onLogout={handleLogout} /> : <Navigate to="/" replace />} 
+             path="/" element={<ComandasPage />} 
         />
         <Route 
           path="/registro-comanda" 
