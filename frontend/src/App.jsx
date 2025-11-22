@@ -10,7 +10,7 @@ import DetalleComandaPage from './DetalleComandaPage';
 // URL de la Intranet Principal
 const MAIN_INTRANET_URL = "https://lavanderia-cobre-landingpage.vercel.app/intranet/dashboard";
 
-// --- COMPONENTE DE PROTECCIÓN ---
+// --- COMPONENTE DE PROTECCIÓN (Lógica y Estilo del Repo TSX) ---
 const ProtectedRoute = ({ children }) => {
   const { user, loginWithToken, loading } = useAuth();
   const location = useLocation();
@@ -18,7 +18,7 @@ const ProtectedRoute = ({ children }) => {
   const [status, setStatus] = useState('verifying'); // 'verifying', 'error', 'success'
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Token de la URL
+  // 1. Obtener el token de la URL (si existe)
   const params = new URLSearchParams(location.search);
   const authToken = params.get('auth_token');
 
@@ -27,26 +27,25 @@ const ProtectedRoute = ({ children }) => {
     let timeoutId;
 
     const verifyAccess = async () => {
-      // 1. Configurar un Timeout de seguridad (5 segundos)
-      // Si Firebase no responde en 5s, mostramos error para no dejarlo pegado.
+      // 1. Configurar un Timeout de seguridad (8 segundos)
       timeoutId = setTimeout(() => {
         if (isMounted && status === 'verifying') {
           setErrorMessage('Tiempo de espera agotado. No se pudo validar.');
           setStatus('error');
-          // Redirigir después de mostrar el error brevemente
+          // Redirigir después de mostrar el error brevemente (2s)
           setTimeout(() => window.location.href = MAIN_INTRANET_URL, 2000);
         }
-      }, 8000);
+      }, 8000); // 8 segundos para el timeout
 
       try {
-        // CASO A: Viene token en URL
+        // CASO A: Viene token en URL (login principal)
         if (authToken) {
           if (!user || user.uid !== authToken) {
             const success = await loginWithToken(authToken);
             if (!isMounted) return;
 
             if (!success) {
-              setErrorMessage('Credenciales inválidas o usuario inactivo.');
+              setErrorMessage('Credenciales inválidas o acceso denegado.');
               setStatus('error');
               setTimeout(() => window.location.href = MAIN_INTRANET_URL, 2000);
               return;
@@ -60,18 +59,19 @@ const ProtectedRoute = ({ children }) => {
           return;
         }
 
-        // CASO B: Ya tiene sesión
+        // CASO B: Ya tiene sesión guardada (al recargar)
         if (user) {
           if (isMounted) setStatus('success');
           return;
         }
 
-        // CASO C: Nada
+        // CASO C: Nada (ni token ni sesión) -> Redirigir inmediatamente
         if (!loading) {
           if (isMounted) {
              window.location.href = MAIN_INTRANET_URL;
           }
         }
+
       } catch (err) {
         console.error(err);
         if (isMounted) {
@@ -94,28 +94,38 @@ const ProtectedRoute = ({ children }) => {
   }, [authToken, user, loading]); 
 
   // --- PANTALLA DE CARGA / ERROR (Estilo IDÉNTICO al repo enviado) ---
-  // Colores Tailwind 'orange': 100:#ffedd5, 200:#fed7aa, 500:#f97316, 600:#ea580c
-  
   if (loading || status === 'verifying' || status === 'error') {
+    // Colores de tu paleta: orange-100/200/500/600
+    const ORANGE_100 = '#ffedd5'; 
+    const ORANGE_200 = '#fed7aa'; 
+    const ORANGE_500 = '#f97316'; 
+    const ORANGE_600 = '#ea580c'; 
+    const RED_600 = '#dc2626';
+
     return (
       <div style={{ 
         minHeight: '100vh', 
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'center', 
-        background: 'linear-gradient(to bottom right, #ffedd5, #fed7aa)', // from-orange-100 to-orange-200
+        background: `linear-gradient(to bottom right, ${ORANGE_100}, ${ORANGE_200})`,
         fontFamily: 'system-ui, sans-serif'
       }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          gap: '1rem' 
+        }}>
           
           {/* Spinner o Icono de Error */}
           {status === 'error' ? (
-            <div style={{ fontSize: '3rem' }}>⚠️</div>
+            <div style={{ fontSize: '3rem', color: RED_600 }}>⚠️</div>
           ) : (
             <div style={{ 
               width: '3rem', 
               height: '3rem', 
-              border: '4px solid #f97316', // border-orange-500
+              border: `4px solid ${ORANGE_500}`, 
               borderTopColor: 'transparent', 
               borderRadius: '50%', 
               animation: 'spin 1s linear infinite' 
@@ -124,9 +134,9 @@ const ProtectedRoute = ({ children }) => {
           
           {/* Texto */}
           <div style={{ 
-            fontSize: '1.25rem', // text-xl
-            fontWeight: '600', // font-semibold
-            color: status === 'error' ? '#dc2626' : '#ea580c' // text-red-600 o text-orange-600
+            fontSize: '1.25rem',
+            fontWeight: '600',
+            color: status === 'error' ? RED_600 : ORANGE_600 
           }}>
             {status === 'error' ? errorMessage : 'Validando credenciales...'}
           </div>
@@ -136,20 +146,46 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
+  // Si pasa todas las validaciones
   return user ? children : null;
 };
 
+// --- APP PRINCIPAL ---
 function App() {
   return (
-    <AuthProvider>
-      <Router>
+    <Router>
+      <AuthProvider>
         <Routes>
-          <Route path="/" element={<ProtectedRoute><ComandasPage /></ProtectedRoute>} />
-          <Route path="/registro-comanda" element={<ProtectedRoute><RegistroComandaPage /></ProtectedRoute>} />
-          <Route path="/detalle/:id" element={<ProtectedRoute><DetalleComandaPage /></ProtectedRoute>} />
+          {/* Todas las rutas del Equipo 2 protegidas */}
+          <Route 
+            path="/" 
+            element={
+              <ProtectedRoute>
+                <ComandasPage />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/registro-comanda" 
+            element={
+              <ProtectedRoute>
+                <RegistroComandaPage />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/detalle/:id" 
+            element={
+              <ProtectedRoute>
+                <DetalleComandaPage />
+              </ProtectedRoute>
+            } 
+          />
         </Routes>
-      </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 
