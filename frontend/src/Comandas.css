@@ -15,30 +15,53 @@ body {
 .auth-header {
   background-color: var(--header-bg);
   color: white;
-  padding: 1rem 2rem;
+  width: 100%; /* Forzar ancho completo */
+  padding: 1rem 0; /* Quitamos padding lateral del contenedor padre */
   border-bottom: 4px solid var(--primary);
   display: flex;
-  justify-content: center; /* Centrado en movil por defecto */
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  
+  /* Asegura que no haya márgenes extraños empujándolo */
+  margin: 0; 
+  box-sizing: border-box;
 }
 
+/* Contenedor interno para alinear el logo y texto con el resto de la app */
 .header-brand {
     display: flex;
     align-items: center;
     gap: 15px;
+    
+    /* Esto alinea el contenido del header con el contenido del cuerpo */
+    width: 100%;
+    max-width: 1200px; /* Mismo ancho máximo que .comandas-main */
+    padding: 0 15px; /* Mismo padding lateral que .comandas-main */
+    box-sizing: border-box;
 }
 
 .auth-logo {
-  height: 40px;
-  width: 40px;
-  border-radius: 4px;
-  border: 2px solid white;
+  height: 45px;
+  width: 45px;
+  border-radius: 6px;
+  border: 2px solid rgba(255,255,255,0.8);
+  object-fit: cover; /* Asegura que el logo no se deforme */
 }
 
+.auth-header h1 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+}
+
+/* Ajuste del cuerpo principal para que coincida */
 .comandas-main {
   width: 100%;
   max-width: 1200px;
-  margin: 2rem auto;
-  padding: 0 15px; /* Padding seguro para moviles */
+  margin: 20px auto; /* Margen arriba y abajo */
+  padding: 0 15px; /* Padding lateral seguro */
+  box-sizing: border-box;
 }
 
 /* Toolbar y Filtros */
