@@ -9,6 +9,11 @@ import logoSrc from "./assets/Logo lavanderia.jpeg";
 import generarFactura from "./FacturaGenerador";
 import ModuloClienteRecientes from "./ModuloClienteReciente";
 
+import { 
+  FaSave, FaPaperclip, FaSearch, FaArrowLeft, FaCamera, 
+  FaPlus, FaTimes, FaCheckCircle, FaExclamationCircle, FaUser, FaPhone, FaMapMarkerAlt
+} from "react-icons/fa";
+
 export default function RegistroComandaPage() {
   const navigate = useNavigate();
 
@@ -252,384 +257,191 @@ export default function RegistroComandaPage() {
     setFotos([...fotos, ...newFotos]);
   };
 
-  return (
-    <div className="registro-container">
-      {/* --- MODAL DE ERROR (FALTA DATOS) --- */}
+return (
+    <div className="registro-page-wrapper">
+      {/* MODAL ERROR */}
       {showErrorModal && (
         <div className="modal-overlay">
-          <div
-            className="modal-content"
-            style={{
-              textAlign: "center",
-              maxWidth: "400px",
-              borderTop: "5px solid #dc3545",
-            }}
-          >
-            <h3 style={{ color: "#dc3545", marginTop: 0 }}>
-              ⚠️ Datos Incompletos
-            </h3>
-            <p style={{ fontSize: "1.1em", margin: "20px 0", color: "#333" }}>
-              Falta ingresar el <b>Nombre del Cliente</b> o el <b>Teléfono</b>.
-            </p>
-            <button
-              onClick={() => setShowErrorModal(false)}
-              style={{
-                padding: "10px 25px",
-                border: "none",
-                background: "#004080", // Color azul corporativo
-                color: "white",
-                borderRadius: "5px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                fontSize: "1rem",
-              }}
-            >
-              Entendido
-            </button>
+          <div className="modal-content error-modal">
+            <FaExclamationCircle className="modal-icon error" />
+            <h3>Datos Incompletos</h3>
+            <p>Falta ingresar el <b>Nombre del Cliente</b> o el <b>Teléfono</b>.</p>
+            <button onClick={() => setShowErrorModal(false)} className="btn-modal-confirm">Entendido</button>
           </div>
         </div>
       )}
 
-      {/* --- MODAL DE ÉXITO (GUARDADO) --- */}
+      {/* MODAL EXITO */}
       {showSuccessModal && (
         <div className="modal-overlay">
-          <div
-            className="modal-content"
-            style={{
-              textAlign: "center",
-              maxWidth: "400px",
-              borderTop: "5px solid #28a745",
-            }}
-          >
-            <h3 style={{ color: "#28a745", marginTop: 0 }}>
-              ✅ ¡Comanda Guardada!
-            </h3>
-            <p style={{ fontSize: "1.1em", margin: "20px 0", color: "#333" }}>
-              Guardado y enviado a WhatsApp correctamente.
-            </p>
-            <button
-              onClick={handleCloseSuccess}
-              style={{
-                padding: "10px 25px",
-                border: "none",
-                background: "#28a745", // Verde éxito
-                color: "white",
-                borderRadius: "5px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                fontSize: "1rem",
-              }}
-            >
-              Aceptar
-            </button>
+          <div className="modal-content success-modal">
+            <FaCheckCircle className="modal-icon success" />
+            <h3>¡Comanda Guardada!</h3>
+            <p>Guardado y enviado a WhatsApp correctamente.</p>
+            <button onClick={handleCloseSuccess} className="btn-modal-confirm success-btn">Aceptar</button>
           </div>
         </div>
       )}
 
-      {/* Modal Buscar Cliente */}
-      <ModuloClienteRecientes
-        isOpen={showClientSearchModal}
-        onClose={() => setShowClientSearchModal(false)}
-        onClientFound={handleClientFound}
-      />
+      {/* Modulo Buscar Cliente */}
+      <ModuloClienteRecientes isOpen={showClientSearchModal} onClose={() => setShowClientSearchModal(false)} onClientFound={handleClientFound} />
 
       {/* Modal Fotos */}
       {showModalFotos && (
         <div className="modal-overlay">
           <div className="modal-content">
             <h3 className="modal-title">Adjuntar Fotos</h3>
-            <div
-              className="file-input-container"
-              onClick={() => document.getElementById("fileInput").click()}
-            >
-              <span>📂 Seleccionar fotos</span>
-              <input
-                id="fileInput"
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleFileSelect}
-                style={{ display: "none" }}
-              />
+            <div className="file-input-container" onClick={() => document.getElementById("fileInput").click()}>
+              <FaCamera size={30} color="#cd853f"/>
+              <span>Toca para seleccionar</span>
+              <input id="fileInput" type="file" multiple accept="image/*" onChange={handleFileSelect} style={{ display: "none" }} />
             </div>
             <div className="fotos-grid">
-              {fotos.map((f, i) => (
-                <img key={i} src={f.preview} className="foto-preview" alt="p" />
-              ))}
+              {fotos.map((f, i) => <img key={i} src={f.preview} className="foto-preview" alt="p" />)}
             </div>
             <div className="modal-actions">
-              <button
-                className="btn-modal-cancel"
-                onClick={() => {
-                  setFotos([]);
-                  setShowModalFotos(false);
-                }}
-              >
-                CANCELAR
-              </button>
-              <button
-                className="btn-modal-confirm"
-                onClick={() => setShowModalFotos(false)}
-              >
-                CONFIRMAR
-              </button>
+              <button className="btn-modal-cancel" onClick={() => { setFotos([]); setShowModalFotos(false); }}>CANCELAR</button>
+              <button className="btn-modal-confirm" onClick={() => setShowModalFotos(false)}>CONFIRMAR</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* HEADER IGUAL A LA IMAGEN */}
-      <header className="registro-header">
-        <div className="registro-header-left">
-          <img src={logoSrc} alt="Logo" className="registro-header-logo" />
-          <span className="registro-header-title">Lavandería El Cobre Spa</span>
-        </div>
-        <div className="registro-header-actions">
-          <button
-            className="btn-header btn-adjuntar"
-            onClick={() => setShowModalFotos(true)}
-          >
-            📎 ADJUNTAR FOTO
-          </button>
+      <div className="registro-container">
+        <header className="registro-header">
+            <div className="registro-header-top">
+                <div className="registro-header-left">
+                    <img src={logoSrc} alt="Logo" className="registro-header-logo" />
+                    <span className="registro-header-title">Lavandería El Cobre Spa</span>
+                </div>
+                <button className="btn-back-header" onClick={() => navigate("/")}><FaArrowLeft /> Salir</button>
+            </div>
+            
+            <div className="registro-header-actions">
+                <button className="btn-header btn-adjuntar" onClick={() => setShowModalFotos(true)}>
+                    <FaPaperclip /> Foto
+                </button>
+                <button className="btn-header btn-buscar-cliente" onClick={() => setShowClientSearchModal(true)}>
+                    <FaSearch /> Buscar
+                </button>
+                <button className="btn-header btn-guardar" onClick={() => handleGuardar(true)} disabled={isSubmitting}>
+                    <FaSave /> Guardar
+                </button>
+            </div>
+        </header>
 
-          <button
-            className="btn-header btn-guardar"
-            onClick={() => handleGuardar(true)}
-            disabled={isSubmitting}
-          >
-            💾 GUARDAR COMANDA
-          </button>
+        <h2 className="registro-title">Registro de Comanda</h2>
 
-          <button
-            className="btn-header btn-buscar-cliente"
-            onClick={() => setShowClientSearchModal(true)}
-          >
-            🔎 BUSCAR CLIENTE
-          </button>
-        </div>
-      </header>
+        <form className="registro-form" onSubmit={(e) => e.preventDefault()}>
+            {/* Datos Orden */}
+            <div className="form-section">
+                <div className="form-row three-col">
+                    <div className="form-group">
+                        <label>N° Orden</label>
+                        <input type="text" value={numeroOrden} readOnly className="input-readonly" />
+                    </div>
+                    <div className="form-group">
+                        <label>Fecha</label>
+                        <input type="date" value={fechaIngreso} onChange={(e) => setFechaIngreso(e.target.value)} />
+                    </div>
+                    <div className="form-group">
+                        <label>N° Boucher</label>
+                        <input type="text" value={numeroBoucher} onChange={(e) => setNumeroBoucher(e.target.value)} placeholder="---" />
+                    </div>
+                </div>
+            </div>
 
-      <div className="btn-back-container">
-        <button className="btn-back" onClick={() => navigate("/")}>
-          REGRESAR AL LISTADO
-        </button>
+            {/* Datos Cliente */}
+            <div className="form-section">
+                <div className="form-row">
+                    <div className="form-group flex-2">
+                        <label><FaUser /> Nombre Cliente *</label>
+                        <input type="text" value={nombreCliente} onChange={(e) => setNombreCliente(e.target.value)} placeholder="Ej: Juan Pérez" />
+                    </div>
+                    <div className="form-group">
+                        <label><FaPhone /> Teléfono *</label>
+                        <input type="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} placeholder="+569..." />
+                    </div>
+                </div>
+                <div className="form-row">
+                    <div className="form-group">
+                        <label><FaMapMarkerAlt /> Dirección</label>
+                        <input type="text" value={direccion} onChange={(e) => setDireccion(e.target.value)} placeholder="Calle, Número..." />
+                    </div>
+                </div>
+            </div>
+
+            {/* Opciones */}
+            <div className="form-section">
+                <div className="form-row options-row">
+                    <div className="form-group">
+                        <label>Tipo</label>
+                        <select value={tipoCliente} onChange={(e) => setTipoCliente(e.target.value)}>
+                            <option value="Particular">Particular</option>
+                        </select>
+                    </div>
+
+                    <div className={`option-card ${servicioExpress ? 'active-express' : ''}`} onClick={() => setServicioExpress(!servicioExpress)}>
+                        <div className="option-check">{servicioExpress && <FaCheckCircle />}</div>
+                        <span>Express (+50%)</span>
+                    </div>
+
+                    <div className={`option-card ${tipoEntrega === "Retiro" ? 'active' : ''}`} onClick={() => setTipoEntrega("Retiro")}>
+                        <div className="option-check">{tipoEntrega === "Retiro" && <FaCheckCircle />}</div>
+                        <span>Retiro Local</span>
+                    </div>
+
+                    <div className={`option-card ${tipoEntrega === "Despacho" ? 'active' : ''}`} onClick={() => setTipoEntrega("Despacho")}>
+                        <div className="option-check">{tipoEntrega === "Despacho" && <FaCheckCircle />}</div>
+                        <span>Despacho (+$3k)</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Tabla Prendas - Adaptada a Cards en Movil */}
+            <div className="prendas-container">
+                <div className="prendas-header-row">
+                    <span>Cant</span>
+                    <span>Prenda</span>
+                    <span>Valor</span>
+                    <span>Detalle</span>
+                    <span></span>
+                </div>
+                {prendas.map((item, i) => (
+                    <div className="prenda-row" key={i}>
+                        <div className="p-cant">
+                            <input type="number" min="1" value={item.cantidad} onChange={(e) => handlePrendaChange(i, "cantidad", e.target.value)} />
+                        </div>
+                        <div className="p-nombre">
+                            <input type="text" value={item.nombre} onChange={(e) => handlePrendaChange(i, "nombre", e.target.value)} placeholder="Prenda" />
+                        </div>
+                        <div className="p-valor">
+                            <input type="number" min="0" value={item.valor} onChange={(e) => handlePrendaChange(i, "valor", e.target.value)} placeholder="$" />
+                        </div>
+                        <div className="p-detalle">
+                            <input type="text" value={item.detalle} onChange={(e) => handlePrendaChange(i, "detalle", e.target.value)} placeholder="Detalle" />
+                        </div>
+                        <div className="p-action">
+                            {prendas.length > 1 && <button className="btn-icon-remove" onClick={() => removePrendaRow(i)}><FaTimes /></button>}
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            <button className="add-item-btn" onClick={addPrendaRow}><FaPlus /> Añadir Prenda</button>
+
+            {fotos.length > 0 && (
+                <div className="fotos-adjuntas-section">
+                    <div className="fotos-adjuntas-title"><FaCamera /> {fotos.length} Fotos Adjuntas</div>
+                </div>
+            )}
+
+            <div className="monto-total-container">
+                <span className="monto-label">TOTAL A PAGAR</span>
+                <div className="monto-total">${new Intl.NumberFormat("es-CL").format(montoTotal)}</div>
+            </div>
+        </form>
       </div>
-
-      <h2 className="registro-title">REGISTRO DE COMANDA</h2>
-
-      <form className="registro-form" onSubmit={(e) => e.preventDefault()}>
-        {/* FILA 1: Orden, Fecha, Boucher (IGUAL A LA IMAGEN) */}
-        <div className="form-row three-col">
-          <div className="form-group">
-            <label>NÚMERO ORDEN (AUTO)</label>
-            <input
-              type="text"
-              value={numeroOrden}
-              readOnly
-              style={{ backgroundColor: "#f0f0f0" }}
-            />
-          </div>
-          <div className="form-group">
-            <label>FECHA DE INGRESO</label>
-            <input
-              type="date"
-              value={fechaIngreso}
-              onChange={(e) => setFechaIngreso(e.target.value)}
-            />
-          </div>
-          <div className="form-group">
-            <label>N° BOUCHER</label>
-            <input
-              type="text"
-              value={numeroBoucher}
-              onChange={(e) => setNumeroBoucher(e.target.value)}
-              placeholder="Ingrese N° de Boucher"
-            />
-          </div>
-        </div>
-
-        {/* FILA 2: Nombre y Teléfono */}
-        <div className="form-row">
-          <div className="form-group" style={{ flex: 2 }}>
-            <label>NOMBRE CLIENTE *</label>
-            <input
-              type="text"
-              value={nombreCliente}
-              onChange={(e) => setNombreCliente(e.target.value)}
-              placeholder="Ej: Juan Pérez"
-            />
-          </div>
-          <div className="form-group">
-            <label>TELÉFONO *</label>
-            <input
-              type="tel"
-              value={telefono}
-              onChange={(e) => setTelefono(e.target.value)}
-              placeholder="+569 1234 5678"
-            />
-          </div>
-        </div>
-
-        {/* FILA 3: Dirección */}
-        <div className="form-row">
-          <div className="form-group">
-            <label>DIRECCIÓN</label>
-            <input
-              type="text"
-              value={direccion}
-              onChange={(e) => setDireccion(e.target.value)}
-              placeholder="Calle, Número, Comuna"
-            />
-          </div>
-        </div>
-
-        {/* FILA 4: Opciones (Tipo, Express, Retiro, Despacho) IGUAL A LA IMAGEN */}
-        <div className="form-row options-row">
-          <div className="form-group">
-            <label>TIPO DE CLIENTE</label>
-            <select
-              value={tipoCliente}
-              onChange={(e) => setTipoCliente(e.target.value)}
-            >
-              <option value="Particular">Particular</option>
-            </select>
-          </div>
-
-          {/* SERVICIO EXPRESS (Recuadro) */}
-          <div
-            className="option-card"
-            onClick={() => setServicioExpress(!servicioExpress)}
-          >
-            <input
-              type="checkbox"
-              checked={servicioExpress}
-              readOnly
-              style={{ marginRight: "10px" }}
-            />
-            <span>SERVICIO EXPRESS (+50%)</span>
-          </div>
-
-          {/* RETIRO (Recuadro) */}
-          <div className="option-card" onClick={() => setTipoEntrega("Retiro")}>
-            <input
-              type="radio"
-              checked={tipoEntrega === "Retiro"}
-              readOnly
-              style={{ marginRight: "10px" }}
-            />
-            <span>RETIRO LOCAL</span>
-          </div>
-
-          {/* DESPACHO (Recuadro) */}
-          <div
-            className="option-card"
-            onClick={() => setTipoEntrega("Despacho")}
-          >
-            <input
-              type="radio"
-              checked={tipoEntrega === "Despacho"}
-              readOnly
-              style={{ marginRight: "10px" }}
-            />
-            <span>DESPACHO (+${COSTO_DESPACHO})</span>
-          </div>
-        </div>
-
-        <table className="prendas-table">
-          <thead>
-            <tr>
-              <th width="10%">CANT.</th>
-              <th width="30%">PRENDA</th>
-              <th width="20%">VALOR UNIT.</th>
-              <th width="30%">DETALLE</th>
-              <th width="10%"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {prendas.map((item, i) => (
-              <tr key={i}>
-                <td>
-                  <input
-                    type="number"
-                    min="1"
-                    value={item.cantidad}
-                    onChange={(e) =>
-                      handlePrendaChange(i, "cantidad", e.target.value)
-                    }
-                  />
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    value={item.nombre}
-                    onChange={(e) =>
-                      handlePrendaChange(i, "nombre", e.target.value)
-                    }
-                    placeholder="Ej: Pantalón"
-                  />
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    min="0"
-                    value={item.valor}
-                    onChange={(e) =>
-                      handlePrendaChange(i, "valor", e.target.value)
-                    }
-                    placeholder="$ 0"
-                  />
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    value={item.detalle}
-                    onChange={(e) =>
-                      handlePrendaChange(i, "detalle", e.target.value)
-                    }
-                    placeholder="Mancha, rotura..."
-                  />
-                </td>
-                <td style={{ textAlign: "center" }}>
-                  {prendas.length > 1 && (
-                    <button
-                      className="btn-icon-remove"
-                      onClick={() => removePrendaRow(i)}
-                    >
-                      ✕
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <button className="add-item-btn" onClick={addPrendaRow}>
-          + Añadir otra prenda
-        </button>
-
-        {fotos.length > 0 && (
-          <div className="fotos-adjuntas-section">
-            <div className="fotos-adjuntas-title">📸 {fotos.length} FOTOS:</div>
-            <div
-              className="fotos-grid"
-              style={{ justifyContent: "flex-start" }}
-            >
-              {fotos.map((f, i) => (
-                <img key={i} src={f.preview} className="foto-preview" alt="" />
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className="monto-total-container">
-          <div style={{ textAlign: "right" }}>
-            <div className="monto-total">
-              <span className="monto-label">MONTO TOTAL A PAGAR:</span>$
-              {new Intl.NumberFormat("es-CL").format(montoTotal)}
-            </div>
-          </div>
-        </div>
-      </form>
     </div>
   );
 }

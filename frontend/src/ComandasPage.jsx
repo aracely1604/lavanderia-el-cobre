@@ -14,6 +14,11 @@ import "./Comandas.css";
 import logoSrc from "./assets/Logo lavanderia.jpeg";
 import axios from "axios";
 
+import { 
+  FaEye, FaFilePdf, FaWhatsapp, FaTrash, FaTruck, 
+  FaBoxOpen, FaSignOutAlt, FaPlus, FaFilter, FaCheck, FaClock, FaExclamationTriangle 
+} from "react-icons/fa";
+
 export default function ComandasPage() {
   const navigate = useNavigate();
   const [comandas, setComandas] = useState([]);
@@ -281,133 +286,95 @@ export default function ComandasPage() {
       ? { backgroundColor: "#ffebee", color: "#999" }
       : {};
 
-    return (
+return (
       <tr key={comanda.id} style={rowStyle}>
-        <td
-          className="action-icon"
-          title="Ver detalle"
-          onClick={() => navigate(`/detalle/${comanda.id}`)}
-          style={{ cursor: "pointer", opacity: isCancelada ? 0.5 : 1 }}
-        >
-          👁️
+        <td data-label="Detalle" className="center-content">
+          <button 
+             className="icon-btn view-btn"
+             title="Ver detalle"
+             onClick={() => navigate(`/detalle/${comanda.id}`)}
+             disabled={isCancelada}
+          >
+            <FaEye />
+          </button>
         </td>
-        <td>{comanda.numeroOrden}</td>
-        <td>{comanda.nombreCliente}</td>
-        <td>{comanda.tipoCliente}</td>
-        <td>
+        <td data-label="N° Orden">{comanda.numeroOrden}</td>
+        <td data-label="Cliente">{comanda.nombreCliente}</td>
+        <td data-label="Tipo">{comanda.tipoCliente}</td>
+        <td data-label="Fecha">
           {comanda.fechaIngreso?.toDate
             ? comanda.fechaIngreso.toDate().toLocaleDateString("es-CL")
-            : "Fecha inválida"}
+            : "Inválida"}
         </td>
-        <td>{comanda.horaIngreso || "--:--"}</td>
-        <td style={{ textDecoration: isCancelada ? "line-through" : "none" }}>
+        <td data-label="Hora">{comanda.horaIngreso || "--:--"}</td>
+        <td data-label="Total" style={{ textDecoration: isCancelada ? "line-through" : "none" }}>
           ${new Intl.NumberFormat("es-CL").format(comanda.montoTotal || 0)}
         </td>
 
-        <td className="actions-cell">
-          <button
-            className="btn-accion btn-descargar"
-            onClick={() => handleDescargarFactura(comanda.facturaPDF)}
-            disabled={isCancelada}
-            style={{ opacity: isCancelada ? 0.5 : 1 }}
-          >
-            DESCARGAR
-          </button>
-          {comanda.tipoEntrega === "Despacho" && (
-            <button
-              className="btn-accion btn-notificar"
-              onClick={() => enviarNotificacionDespachoEnCamino(comanda)}
-              disabled={comanda.notificadoEnCamino || isCancelada}
-              style={{
-                opacity: isCancelada
-                  ? 0.5
-                  : comanda.notificadoEnCamino
-                  ? 0.6
-                  : 1,
-                backgroundColor: comanda.notificadoEnCamino
-                  ? "#28a745"
-                  : "#d68a31",
-              }}
-            >
-              {comanda.notificadoEnCamino ? "✔ EN CAMINO" : "EN CAMINO"}
-            </button>
-          )}
+        <td data-label="Acciones" className="actions-cell">
+            <div className="actions-wrapper">
+                <button
+                    className="btn-accion btn-descargar"
+                    onClick={() => handleDescargarFactura(comanda.facturaPDF)}
+                    disabled={isCancelada}
+                    title="Descargar PDF"
+                >
+                    <FaFilePdf /> <span className="btn-text">PDF</span>
+                </button>
 
-          {mostrarBotonesNotificacion && (
-            <>
-              <button
-                className="btn-accion btn-notificar"
-                onClick={() => enviarNotificacion(comanda)}
-                disabled={comanda.notificado || isCancelada}
-                style={{
-                  opacity: isCancelada ? 0.5 : comanda.notificado ? 0.6 : 1,
-                  backgroundColor: comanda.notificado ? "#28a745" : "#d68a31",
-                }}
-              >
-                {comanda.notificado ? "✔ ENVIADO" : "NOTIFICAR"}
-              </button>
+                {comanda.tipoEntrega === "Despacho" && (
+                    <button
+                    className={`btn-accion ${comanda.notificadoEnCamino ? 'btn-success' : 'btn-warning'}`}
+                    onClick={() => enviarNotificacionDespachoEnCamino(comanda)}
+                    disabled={comanda.notificadoEnCamino || isCancelada}
+                    >
+                    <FaTruck /> <span className="btn-text">{comanda.notificadoEnCamino ? "ENVIADO" : "CAMINO"}</span>
+                    </button>
+                )}
 
-              <button
-                className="btn-accion btn-notificar"
-                onClick={() => enviarNotificacionAtraso15(comanda)}
-                disabled={comanda.notificado15 || isCancelada}
-                style={{
-                  opacity: isCancelada ? 0.5 : comanda.notificado15 ? 0.6 : 1,
-                  backgroundColor: comanda.notificado15 ? "#28a745" : "#d68a31",
-                }}
-              >
-                {comanda.notificado15 ? "✔ 15 DIAS" : "15 DIAS"}
-              </button>
+                {mostrarBotonesNotificacion && (
+                    <>
+                    <button
+                        className={`btn-accion ${comanda.notificado ? 'btn-success' : 'btn-warning'}`}
+                        onClick={() => enviarNotificacion(comanda)}
+                        disabled={comanda.notificado || isCancelada}
+                    >
+                        <FaWhatsapp /> <span className="btn-text">{comanda.notificado ? "LISTO" : "LISTO"}</span>
+                    </button>
 
-              <button
-                className="btn-accion btn-notificar"
-                onClick={() => enviarNotificacionAtraso30(comanda)}
-                disabled={comanda.notificado30 || isCancelada}
-                style={{
-                  opacity: isCancelada ? 0.5 : comanda.notificado30 ? 0.6 : 1,
-                  backgroundColor: comanda.notificado30 ? "#28a745" : "#d68a31",
-                }}
-              >
-                {comanda.notificado30 ? "✔ 30 DIAS" : "30 DIAS"}
-              </button>
-            </>
-          )}
+                    {/* Botones extra colapsados en móvil si se desea, o mostrados así */}
+                    <button
+                        className={`btn-accion btn-small ${comanda.notificado15 ? 'btn-success' : 'btn-warning'}`}
+                        onClick={() => enviarNotificacionAtraso15(comanda)}
+                        disabled={comanda.notificado15 || isCancelada}
+                        title="Notificar 15 días"
+                    >
+                        <FaClock /> 15
+                    </button>
 
-          {!isCancelada ? (
-            <button
-              className="btn-icon-cancel"
-              // AQUÍ CAMBIAMOS: En vez de borrar directo, abrimos modal
-              onClick={() => handleClickCancelar(comanda.id)}
-              title="Cancelar pedido"
-              style={{
-                marginLeft: "5px",
-                background: "none",
-                border: "2px solid #dc3545",
-                color: "#dc3545",
-                borderRadius: "50%",
-                width: "25px",
-                height: "25px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              ✕
-            </button>
-          ) : (
-            <span
-              style={{
-                color: "red",
-                fontWeight: "bold",
-                fontSize: "0.7em",
-                marginLeft: "5px",
-              }}
-            >
-              CANCELADA
-            </span>
-          )}
+                    <button
+                        className={`btn-accion btn-small ${comanda.notificado30 ? 'btn-success' : 'btn-warning'}`}
+                        onClick={() => enviarNotificacionAtraso30(comanda)}
+                        disabled={comanda.notificado30 || isCancelada}
+                        title="Notificar 30 días"
+                    >
+                        <FaExclamationTriangle /> 30
+                    </button>
+                    </>
+                )}
+
+                {!isCancelada ? (
+                    <button
+                    className="btn-icon-cancel"
+                    onClick={() => handleClickCancelar(comanda.id)}
+                    title="Cancelar pedido"
+                    >
+                    <FaTrash />
+                    </button>
+                ) : (
+                    <span className="cancelada-badge">CANCELADA</span>
+                )}
+            </div>
         </td>
       </tr>
     );
@@ -415,66 +382,22 @@ export default function ComandasPage() {
 
   return (
     <div className="comandas-container">
-      {/* --- MODAL PERSONALIZADO DE CONFIRMACIÓN --- */}
+      {/* MODAL CANCELAR */}
       {showCancelModal && (
         <div className="modal-overlay">
-          <div
-            className="modal-content"
-            style={{ textAlign: "center", maxWidth: "400px" }}
-          >
-            <h3 style={{ color: "#dc3545", marginTop: 0 }}>
-              ⚠️ Cancelar Comanda
-            </h3>
-            <p style={{ fontSize: "1.1em", margin: "20px 0" }}>
-              ¿Estás seguro de que quieres cancelar esta comanda?
-              <br />
-              <span style={{ fontSize: "0.9em", color: "#666" }}>
-                Esta acción marcará la orden como cancelada.
-              </span>
-            </p>
-            <div
-              style={{
-                display: "flex",
-                gap: "10px",
-                justifyContent: "center",
-                marginTop: "20px",
-              }}
-            >
-              <button
-                onClick={cerrarModal}
-                style={{
-                  padding: "10px 20px",
-                  border: "1px solid #ccc",
-                  background: "white",
-                  borderRadius: "5px",
-                  cursor: "pointer",
-                  fontSize: "1rem",
-                }}
-              >
-                No, Regresar
-              </button>
-              <button
-                onClick={confirmarCancelacion}
-                style={{
-                  padding: "10px 20px",
-                  border: "none",
-                  background: "#dc3545",
-                  color: "white",
-                  borderRadius: "5px",
-                  cursor: "pointer",
-                  fontWeight: "bold",
-                  fontSize: "1rem",
-                }}
-              >
-                Sí, Cancelar
-              </button>
+          <div className="modal-content">
+            <h3 className="error-text"><FaExclamationTriangle /> Cancelar Comanda</h3>
+            <p>¿Estás seguro de que quieres cancelar esta comanda?</p>
+            <div className="modal-actions">
+              <button onClick={cerrarModal} className="btn-modal-cancel">Regresar</button>
+              <button onClick={confirmarCancelacion} className="btn-modal-confirm danger">Sí, Cancelar</button>
             </div>
           </div>
         </div>
       )}
 
       <header className="auth-header">
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <div className="header-brand">
           <img src={logoSrc} alt="Logo" className="auth-logo" />
           <h1>Lavandería El Cobre Spa</h1>
         </div>
@@ -483,86 +406,51 @@ export default function ComandasPage() {
       <main className="comandas-main">
         <div className="comandas-toolbar">
           <button onClick={handleLogout} className="btn-logout">
-            CERRAR SESIÓN
+            <FaSignOutAlt /> Cerrar Sesión
           </button>
 
-          <div
-            className="filters"
-            style={{ display: "flex", gap: "15px", alignItems: "center" }}
-          >
-            <input
-              type="date"
-              value={filtroFecha}
-              onChange={(e) => setFiltroFecha(e.target.value)}
-              className="filter-input"
-            />
-            <div style={{ display: "flex", gap: "5px" }}>
-              <button
-                onClick={() => setViewMode("todos")}
-                style={getFilterButtonStyle("todos")}
-              >
-                TODOS
-              </button>
-              <button
-                onClick={() => setViewMode("retiro")}
-                style={getFilterButtonStyle("retiro")}
-              >
-                RETIRO
-              </button>
-              <button
-                onClick={() => setViewMode("despacho")}
-                style={getFilterButtonStyle("despacho")}
-              >
-                DESPACHO
-              </button>
+          <div className="filters">
+            <div className="date-filter">
+                <FaFilter className="filter-icon"/>
+                <input
+                type="date"
+                value={filtroFecha}
+                onChange={(e) => setFiltroFecha(e.target.value)}
+                className="filter-input"
+                />
+            </div>
+            <div className="filter-buttons">
+              <button onClick={() => setViewMode("todos")} className="filter-btn" style={getFilterButtonStyle("todos")}>TODOS</button>
+              <button onClick={() => setViewMode("retiro")} className="filter-btn" style={getFilterButtonStyle("retiro")}>RETIRO</button>
+              <button onClick={() => setViewMode("despacho")} className="filter-btn" style={getFilterButtonStyle("despacho")}>DESPACHO</button>
             </div>
           </div>
 
-          <button
-            onClick={() => navigate("/registro-comanda")}
-            className="btn-crear-comanda"
-          >
-            CREAR COMANDA
+          <button onClick={() => navigate("/registro-comanda")} className="btn-crear-comanda">
+            <FaPlus /> Crear Comanda
           </button>
         </div>
 
         {(viewMode === "todos" || viewMode === "retiro") && (
           <>
-            <h2 style={{ marginTop: "20px", color: "#004080" }}>
-              📦 COMANDAS PARA RETIRO (LOCAL)
-            </h2>
+            <h2 className="section-header retiros"><FaBoxOpen /> Retiro en Local</h2>
             <div className="table-container">
               <table>
                 <thead>
                   <tr>
-                    <th></th>
-                    <th>N° ORDEN</th>
-                    <th>CLIENTE</th>
-                    <th>TIPO</th>
-                    <th>FECHA</th>
-                    <th>HORA</th>
-                    <th>TOTAL</th>
-                    <th>ACCIONES</th>
+                    <th>Ver</th>
+                    <th>N° Orden</th>
+                    <th>Cliente</th>
+                    <th>Tipo</th>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Total</th>
+                    <th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {loading && (
-                    <tr>
-                      <td colSpan="8" style={{ textAlign: "center" }}>
-                        Cargando...
-                      </td>
-                    </tr>
-                  )}
-                  {!loading && comandasRetiro.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan="8"
-                        style={{ textAlign: "center", padding: "20px" }}
-                      >
-                        No hay comandas de Retiro.
-                      </td>
-                    </tr>
-                  )}
+                  {loading && <tr><td colSpan="8" className="center-text">Cargando...</td></tr>}
+                  {!loading && comandasRetiro.length === 0 && <tr><td colSpan="8" className="center-text">No hay datos.</td></tr>}
                   {comandasRetiro.map((comanda) => renderFila(comanda, true))}
                 </tbody>
               </table>
@@ -572,44 +460,25 @@ export default function ComandasPage() {
 
         {(viewMode === "todos" || viewMode === "despacho") && (
           <>
-            <h2 style={{ marginTop: "40px", color: "#d68a31" }}>
-              🚚 COMANDAS PARA DESPACHO
-            </h2>
-            <div className="table-container" style={{ marginBottom: "50px" }}>
+            <h2 className="section-header despachos"><FaTruck /> Despacho a Domicilio</h2>
+            <div className="table-container">
               <table>
                 <thead>
                   <tr>
-                    <th></th>
-                    <th>N° ORDEN</th>
-                    <th>CLIENTE</th>
-                    <th>TIPO</th>
-                    <th>FECHA</th>
-                    <th>HORA</th>
-                    <th>TOTAL</th>
-                    <th>ACCIONES</th>
+                    <th>Ver</th>
+                    <th>N° Orden</th>
+                    <th>Cliente</th>
+                    <th>Tipo</th>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Total</th>
+                    <th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {loading && (
-                    <tr>
-                      <td colSpan="8" style={{ textAlign: "center" }}>
-                        Cargando...
-                      </td>
-                    </tr>
-                  )}
-                  {!loading && comandasDespacho.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan="8"
-                        style={{ textAlign: "center", padding: "20px" }}
-                      >
-                        No hay comandas de Despacho.
-                      </td>
-                    </tr>
-                  )}
-                  {comandasDespacho.map((comanda) =>
-                    renderFila(comanda, false)
-                  )}
+                  {loading && <tr><td colSpan="8" className="center-text">Cargando...</td></tr>}
+                  {!loading && comandasDespacho.length === 0 && <tr><td colSpan="8" className="center-text">No hay datos.</td></tr>}
+                  {comandasDespacho.map((comanda) => renderFila(comanda, false))}
                 </tbody>
               </table>
             </div>

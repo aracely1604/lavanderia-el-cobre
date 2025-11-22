@@ -1,182 +1,304 @@
-/* --- Paleta de colores (la misma de Auth.css) --- */
 :root {
   --header-bg: #a0522d;
-  --header-text: #ffffff;
-  --primary-btn-bg: #cd853f;
-  --primary-btn-hover: #a0522d;
-  --primary-btn-text: #ffffff;
-  --secondary-btn-bg: #f4f4f4;
-  --secondary-btn-hover: #e0e0e0;
-  --secondary-btn-text: #333;
-  --text-color: #333;
-  --label-color: #555;
-  --link-color: #555;
+  --primary: #cd853f;
+  --primary-hover: #a0522d;
+  --bg-light: #f9f9f9;
+  --text-dark: #333;
   --border-color: #ddd;
-  --form-bg: #ffffff;
 }
 
-/* --- Estilos del Header (copiados de Auth.css) --- */
+body {
+    background-color: #f4f4f9;
+}
+
+/* Header */
 .auth-header {
   background-color: var(--header-bg);
-  color: var(--header-text);
-  padding: 0.75rem 2rem;
-  border-bottom: 3px solid var(--primary-btn-bg);
+  color: white;
+  padding: 1rem 2rem;
+  border-bottom: 4px solid var(--primary);
   display: flex;
-  align-items: center;
-  gap: 1rem;
+  justify-content: center; /* Centrado en movil por defecto */
+}
+
+.header-brand {
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
 .auth-logo {
   height: 40px;
   width: 40px;
   border-radius: 4px;
+  border: 2px solid white;
 }
 
-.auth-header h1 {
-  margin: 0;
-  font-size: 1.2rem;
-  font-weight: 600;
-}
-
-/* --- Estilos de la página de Comandas --- */
 .comandas-main {
   width: 100%;
   max-width: 1200px;
-  margin: 2rem auto; /* Centra el contenido principal */
-  padding: 0 2rem;
-  box-sizing: border-box; /* Asegura que el padding no rompa el ancho */
+  margin: 2rem auto;
+  padding: 0 15px; /* Padding seguro para moviles */
 }
 
-.comandas-main h2 {
-  text-align: center;
-  color: var(--text-color);
-  text-transform: uppercase;
-  font-weight: 700;
-  margin-bottom: 2rem;
-}
-
-/* Barra de herramientas superior */
+/* Toolbar y Filtros */
 .comandas-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   margin-bottom: 2rem;
+  flex-wrap: wrap; /* Importante para permitir saltos */
+  gap: 15px;
 }
 
 .filters {
   display: flex;
-  gap: 1rem;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
 }
-.filters input, .filters select {
-  padding: 0.6rem;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  font-size: 0.9rem;
+
+.date-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #666;
 }
+
+.filter-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.filter-btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.85rem;
+    transition: transform 0.1s;
+}
+
+.filter-btn:active { transform: scale(0.95); }
 
 .btn-logout, .btn-crear-comanda {
-  padding: 0.7rem 1.2rem;
-  font-size: 0.9rem;
-  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
   border: none;
   border-radius: 6px;
+  font-weight: bold;
   cursor: pointer;
   text-transform: uppercase;
+  font-size: 0.9rem;
 }
 
-.btn-logout {
-  background-color: var(--secondary-btn-bg);
-  color: var(--secondary-btn-text);
-}
-.btn-logout:hover {
-  background-color: var(--secondary-btn-hover);
-}
+.btn-logout { background-color: #eee; color: #333; }
+.btn-crear-comanda { background-color: var(--primary); color: white; }
+.btn-crear-comanda:hover { background-color: var(--primary-hover); }
 
-.btn-crear-comanda {
-  background-color: var(--primary-btn-bg);
-  color: var(--primary-btn-text);
-}
-.btn-crear-comanda:hover {
-  background-color: var(--primary-btn-hover);
-}
-
-/* Estilos de la Tabla */
+/* Estilos Generales de Tabla (Escritorio) */
 .table-container {
-  width: 100%;
-  overflow-x: auto; /* Permite scroll horizontal en móviles */
-  background: var(--form-bg);
+  background: white;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  text-align: left;
 }
 
 table th, table td {
-  padding: 1rem;
+  padding: 12px 15px;
+  text-align: left;
   border-bottom: 1px solid var(--border-color);
-  vertical-align: middle;
 }
 
 table th {
+  background-color: #f1f1f1;
+  color: #555;
+  font-weight: 700;
   text-transform: uppercase;
-  font-size: 0.75rem;
-  color: var(--label-color);
-  background-color: #f9f9f9;
+  font-size: 0.8rem;
 }
 
-table tr:last-child td {
-  border-bottom: none;
+/* Icon Buttons */
+.icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 5px;
+    transition: color 0.2s;
 }
+.view-btn { color: #004080; }
+.view-btn:hover { color: #0066cc; }
 
-.action-icon {
-  font-size: 1.2rem;
-  cursor: pointer;
+.btn-icon-cancel {
+    background: white;
+    border: 2px solid #dc3545;
+    color: #dc3545;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
 }
+.btn-icon-cancel:hover { background: #dc3545; color: white; }
 
-.actions-cell {
-  display: flex;
-  gap: 0.5rem;
+/* Botones de Acción dentro de la tabla */
+.actions-wrapper {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
 }
 
 .btn-accion {
-  padding: 0.5rem 0.8rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  text-transform: uppercase;
-  background-color: var(--primary-btn-bg);
-  color: var(--primary-btn-text);
-}
-.btn-accion:hover {
-  background-color: var(--primary-btn-hover);
-}
-
-/* Agrega esto a tu src/Comandas.css */
-
-.filters {
     display: flex;
-    gap: 15px;
     align-items: center;
+    gap: 5px;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+}
+.btn-descargar { background-color: #17a2b8; }
+.btn-success { background-color: #28a745; }
+.btn-warning { background-color: #d68a31; }
+.btn-small { padding: 6px; }
+
+.cancelada-badge {
+    color: #dc3545;
+    font-weight: bold;
+    font-size: 0.8rem;
+    background: #ffebee;
+    padding: 4px 8px;
+    border-radius: 4px;
 }
 
-.filter-input,
-.filter-select {
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 0.95em;
-    color: #333;
-    background-color: #fff;
-}
+.section-header { margin: 30px 0 15px 0; font-size: 1.3rem; display: flex; align-items: center; gap: 10px; }
+.retiros { color: #004080; }
+.despachos { color: #d68a31; }
 
-.filter-input:focus,
-.filter-select:focus {
-    outline: none;
-    border-color: #cd853f; /* Color naranja al enfocar */
+/* --- RESPONSIVE: MÓVIL Y TABLET VERTICAL --- */
+@media (max-width: 900px) {
+    
+    /* Toolbar apilada */
+    .comandas-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 20px;
+    }
+
+    .filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-buttons {
+        justify-content: space-between;
+    }
+    .filter-btn { flex: 1; }
+
+    .date-filter { justify-content: center; width: 100%; }
+    .filter-input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; }
+
+    /* TABLA TRANSFORMADA EN TARJETAS */
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+
+    /* Ocultar cabecera de tabla */
+    thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    tbody tr {
+        margin-bottom: 15px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        border: 1px solid #e0e0e0;
+        padding: 10px;
+    }
+
+    td {
+        border: none;
+        border-bottom: 1px solid #eee;
+        position: relative;
+        padding-left: 40%; /* Espacio para la etiqueta */
+        padding-top: 10px;
+        padding-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end; /* Contenido a la derecha */
+        min-height: 40px;
+        text-align: right;
+    }
+
+    td:last-child { border-bottom: none; }
+
+    /* Etiqueta simulada (usando data-label) */
+    td::before {
+        position: absolute;
+        top: 50%;
+        left: 10px;
+        transform: translateY(-50%);
+        width: 35%;
+        padding-right: 10px;
+        white-space: nowrap;
+        content: attr(data-label);
+        font-weight: bold;
+        color: #a0522d;
+        text-align: left;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+    }
+
+    /* Ajustes específicos para celdas */
+    .actions-cell {
+        display: block;
+        width: 100%;
+        padding-left: 0;
+        text-align: center;
+    }
+    
+    .actions-cell::before { display: none; } /* Ocultar etiqueta en acciones */
+
+    .actions-wrapper {
+        justify-content: center;
+        margin-top: 5px;
+        gap: 10px;
+    }
+
+    .btn-accion {
+        flex: 1;
+        justify-content: center;
+        padding: 10px;
+    }
+    
+    .btn-text { display: inline; } /* Mostrar texto en movil */
+
+    /* Botón Ver Detalle destacado */
+    td[data-label="Detalle"] {
+        background-color: #f9f9f9;
+        justify-content: center;
+        padding-left: 0;
+    }
+    td[data-label="Detalle"]::before { display: none; }
 }
