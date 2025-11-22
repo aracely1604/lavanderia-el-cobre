@@ -7,22 +7,6 @@ import DetalleComandaPage from './DetalleComandaPage';
 
 
 function App() {
-  // Usamos localStorage para que si refrescas la página no te saque
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    localStorage.getItem('simulatedLogin') === 'true'
-  );
-
-  // Función para simular el INGRESO
-  const handleLogin = () => {
-    localStorage.setItem('simulatedLogin', 'true');
-    setIsLoggedIn(true);
-  };
-
-  // Función para simular el CIERRE DE SESIÓN
-  const handleLogout = () => {
-    localStorage.removeItem('simulatedLogin');
-    setIsLoggedIn(false);
-  };
 
   return (
     <Router>
