@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { db, auth } from "./firebaseConfig";
+import { db } from "./firebaseConfig"; // Ya no importamos 'auth' ni 'signOut'
 import {
   collection,
   query,
@@ -8,19 +8,21 @@ import {
   doc,
   updateDoc,
 } from "firebase/firestore";
-import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "./context/AuthContext"; // Importar contexto
 import "./Comandas.css";
 import logoSrc from "./assets/Logo lavanderia.jpeg";
 import axios from "axios";
 
 import { 
   FaEye, FaFilePdf, FaWhatsapp, FaTrash, FaTruck, 
-  FaBoxOpen, FaSignOutAlt, FaPlus, FaFilter, FaCheck, FaClock, FaExclamationTriangle 
+  FaBoxOpen, FaPlus, FaFilter, FaClock, FaExclamationTriangle 
 } from "react-icons/fa";
 
 export default function ComandasPage() {
   const navigate = useNavigate();
+  const { user } = useAuth(); // Obtenemos el usuario y su rol
+  
   const [comandas, setComandas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState("todos");
@@ -77,18 +79,12 @@ export default function ComandasPage() {
   const comandasRetiro = comandas.filter((c) => c.tipoEntrega === "Retiro");
   const comandasDespacho = comandas.filter((c) => c.tipoEntrega === "Despacho");
 
-  const handleLogout = async () => {
-    await signOut(auth);
-    navigate("/");
-  };
-
-  // 1. AL HACER CLIC EN LA "X", SOLO ABRIMOS EL MODAL
+  // --- LOGICA CANCELAR ---
   const handleClickCancelar = (id) => {
     setIdToDelete(id);
     setShowCancelModal(true);
   };
 
-  // 2. SI CONFIRMA EN EL MODAL, EJECUTAMOS LA LÓGICA
   const confirmarCancelacion = async () => {
     if (!idToDelete) return;
 
@@ -97,7 +93,6 @@ export default function ComandasPage() {
       await updateDoc(comandaRef, {
         estado: "Cancelada",
       });
-      // Cerramos modal y limpiamos ID
       setShowCancelModal(false);
       setIdToDelete(null);
     } catch (error) {
@@ -106,41 +101,24 @@ export default function ComandasPage() {
     }
   };
 
-  // 3. SI CANCELA O CIERRA
   const cerrarModal = () => {
     setShowCancelModal(false);
     setIdToDelete(null);
   };
 
-  // --- FUNCIONES DE NOTIFICACIÓN ---
+  // --- FUNCIONES DE NOTIFICACIÓN (Sin cambios mayores) ---
   const enviarNotificacion = async (comanda) => {
     try {
-      if (!comanda.telefono) {
-        alert("La comanda no tiene teléfono registrado.");
-        return;
-      }
-      if (!comanda.facturaPDF) {
-        alert("Esta comanda no tiene factura generada.");
-        return;
-      }
+      if (!comanda.telefono) return alert("Sin teléfono");
+      if (!comanda.facturaPDF) return alert("Sin factura");
 
       const payload = {
-        numero: comanda.telefono.startsWith("+")
-          ? comanda.telefono
-          : `+56${comanda.telefono.replace(/\D/g, "")}`,
+        numero: comanda.telefono.startsWith("+") ? comanda.telefono : `+56${comanda.telefono.replace(/\D/g, "")}`,
         enlace: comanda.facturaPDF,
-        mensaje:
-          `¡Hola ${comanda.nombreCliente}!\n\n` +
-          `Tu pedido correspondiente a la orden *${comanda.numeroOrden}* ya está *listo para retiro* en Lavandería El Cobre SPA.\n\n` +
-          `🔗 https://lavanderia-el-cobre-spa.vercel.app\n\n` +
-          `Presenta tu N° de Orden para retirar tu pedido.\n\n` +
-          `¡Gracias por preferir Lavandería El Cobre SPA!`,
+        mensaje: `¡Hola ${comanda.nombreCliente}!\n\nTu pedido orden *${comanda.numeroOrden}* ya está *listo para retiro*.\n\n🔗 https://lavanderia-el-cobre-spa.vercel.app\n\nGracias por preferir Lavandería El Cobre SPA!`,
       };
 
-      await axios.post(
-        "https://us-central1-lavanderia-el-cobre-app.cloudfunctions.net/enviarWhatsappFactura",
-        payload
-      );
+      await axios.post("https://us-central1-lavanderia-el-cobre-app.cloudfunctions.net/enviarWhatsappFactura", payload);
 
       await updateDoc(doc(db, "comandas_2", comanda.id), {
         notificado: true,
@@ -154,110 +132,46 @@ export default function ComandasPage() {
 
   const enviarNotificacionAtraso15 = async (comanda) => {
     try {
-      if (!comanda.telefono) {
-        alert("Sin teléfono");
-        return;
-      }
-      if (!comanda.facturaPDF) {
-        alert("Sin factura");
-        return;
-      }
-      const payload = {
-        numero: comanda.telefono.startsWith("+")
-          ? comanda.telefono
-          : `+56${comanda.telefono.replace(/\D/g, "")}`,
-        enlace: comanda.facturaPDF,
-        mensaje:
-          `Hola ${comanda.nombreCliente},\n\n` +
-          `Tu pedido correspondiente a la orden *${comanda.numeroOrden}* lleva *15 días* listo para retiro.\n\n` +
-          `Te solicitamos gestionar el retiro a la brevedad.\n\n` +
-          `Gracias.`,
-      };
-      await axios.post(
-        "https://us-central1-lavanderia-el-cobre-app.cloudfunctions.net/enviarWhatsappFactura",
-        payload
-      );
-      await updateDoc(doc(db, "comandas_2", comanda.id), {
-        notificado15: true,
-        fechaNotificacion15: new Date(),
-      });
-    } catch (err) {
-      console.error(err);
-      alert("Error al notificar");
-    }
+        const payload = {
+            numero: comanda.telefono.startsWith("+") ? comanda.telefono : `+56${comanda.telefono.replace(/\D/g, "")}`,
+            enlace: comanda.facturaPDF,
+            mensaje: `Hola ${comanda.nombreCliente},\n\nTu pedido orden *${comanda.numeroOrden}* lleva *15 días* listo. Favor retirar.`,
+        };
+        await axios.post("https://us-central1-lavanderia-el-cobre-app.cloudfunctions.net/enviarWhatsappFactura", payload);
+        await updateDoc(doc(db, "comandas_2", comanda.id), { notificado15: true, fechaNotificacion15: new Date() });
+    } catch (err) { console.error(err); alert("Error notificar 15 días"); }
   };
 
   const enviarNotificacionAtraso30 = async (comanda) => {
     try {
-      if (!comanda.telefono) {
-        alert("Sin teléfono");
-        return;
-      }
-      if (!comanda.facturaPDF) {
-        alert("Sin factura");
-        return;
-      }
-      const payload = {
-        numero: comanda.telefono.startsWith("+")
-          ? comanda.telefono
-          : `+56${comanda.telefono.replace(/\D/g, "")}`,
-        enlace: comanda.facturaPDF,
-        mensaje:
-          `Hola ${comanda.nombreCliente},\n\n` +
-          `Tu pedido correspondiente a la orden *${comanda.numeroOrden}* lleva *30 días* sin ser retirado.\n\n` +
-          `La empresa no se hace responsable por prendas después de este periodo.\n\n` +
-          `Gracias.`,
-      };
-      await axios.post(
-        "https://us-central1-lavanderia-el-cobre-app.cloudfunctions.net/enviarWhatsappFactura",
-        payload
-      );
-      await updateDoc(doc(db, "comandas_2", comanda.id), {
-        notificado30: true,
-        fechaNotificacion30: new Date(),
-      });
-    } catch (err) {
-      console.error(err);
-      alert("Error al notificar");
-    }
+        const payload = {
+            numero: comanda.telefono.startsWith("+") ? comanda.telefono : `+56${comanda.telefono.replace(/\D/g, "")}`,
+            enlace: comanda.facturaPDF,
+            mensaje: `Hola ${comanda.nombreCliente},\n\nTu pedido orden *${comanda.numeroOrden}* lleva *30 días* sin retiro.`,
+        };
+        await axios.post("https://us-central1-lavanderia-el-cobre-app.cloudfunctions.net/enviarWhatsappFactura", payload);
+        await updateDoc(doc(db, "comandas_2", comanda.id), { notificado30: true, fechaNotificacion30: new Date() });
+    } catch (err) { console.error(err); alert("Error notificar 30 días"); }
   };
 
   const enviarNotificacionDespachoEnCamino = async (comanda) => {
     try {
-      if (!comanda.telefono) {
-        alert("La comanda no tiene teléfono registrado.");
-        return;
-      }
-      if (!comanda.codigoDespacho) {
-        alert("Esta comanda no tiene código de despacho registrado.");
-        return;
-      }
+      if (!comanda.telefono || !comanda.codigoDespacho) return alert("Datos incompletos para despacho");
 
       const payload = {
-        numero: comanda.telefono.startsWith("+")
-          ? comanda.telefono
-          : `+56${comanda.telefono.replace(/\D/g, "")}`,
+        numero: comanda.telefono.startsWith("+") ? comanda.telefono : `+56${comanda.telefono.replace(/\D/g, "")}`,
         enlace: comanda.facturaPDF || "",
-        mensaje:
-          `¡Hola ${comanda.nombreCliente}!\n\n` +
-          `Tu pedido correspondiente a la orden *${comanda.numeroOrden}* ya va en camino 🚚.\n\n` +
-          `*Código de entrega:* ${comanda.codigoDespacho}\n\n` +
-          `🔗 https://lavanderia-el-cobre-spa.vercel.app\n\n` +
-          `Por favor ten este código a mano cuando recibas el despacho.\n\n` +
-          `¡Gracias por preferir Lavandería El Cobre SPA!`,
+        mensaje: `¡Hola ${comanda.nombreCliente}!\n\nTu pedido *${comanda.numeroOrden}* va en camino 🚚.\n\n*Código:* ${comanda.codigoDespacho}\n\nGracias!`,
       };
 
-      await axios.post(
-        "https://us-central1-lavanderia-el-cobre-app.cloudfunctions.net/enviarWhatsappFactura",
-        payload
-      );
+      await axios.post("https://us-central1-lavanderia-el-cobre-app.cloudfunctions.net/enviarWhatsappFactura", payload);
 
       await updateDoc(doc(db, "comandas_2", comanda.id), {
         notificadoEnCamino: true,
         fechaNotificacionEnCamino: new Date(),
       });
     } catch (err) {
-      console.error("Error al enviar notificación de despacho:", err);
+      console.error("Error despacho:", err);
       alert("Error al notificar despacho.");
     }
   };
@@ -286,7 +200,10 @@ export default function ComandasPage() {
       ? { backgroundColor: "#ffebee", color: "#999" }
       : {};
 
-return (
+    // PERMISOS: Solo Administrador puede cancelar
+    const puedeCancelar = user?.role === 'Administrador';
+
+    return (
       <tr key={comanda.id} style={rowStyle}>
         <td data-label="Detalle" className="center-content">
           <button 
@@ -342,7 +259,6 @@ return (
                         <FaWhatsapp /> <span className="btn-text">{comanda.notificado ? "LISTO" : "LISTO"}</span>
                     </button>
 
-                    {/* Botones extra colapsados en móvil si se desea, o mostrados así */}
                     <button
                         className={`btn-accion btn-small ${comanda.notificado15 ? 'btn-success' : 'btn-warning'}`}
                         onClick={() => enviarNotificacionAtraso15(comanda)}
@@ -363,7 +279,8 @@ return (
                     </>
                 )}
 
-                {!isCancelada ? (
+                {/* SOLO SE MUESTRA SI NO ESTÁ CANCELADA Y EL USUARIO ES ADMIN */}
+                {!isCancelada && puedeCancelar && (
                     <button
                     className="btn-icon-cancel"
                     onClick={() => handleClickCancelar(comanda.id)}
@@ -371,9 +288,9 @@ return (
                     >
                     <FaTrash />
                     </button>
-                ) : (
-                    <span className="cancelada-badge">CANCELADA</span>
                 )}
+                
+                {isCancelada && <span className="cancelada-badge">CANCELADA</span>}
             </div>
         </td>
       </tr>
@@ -405,9 +322,10 @@ return (
 
       <main className="comandas-main">
         <div className="comandas-toolbar">
-          <button onClick={handleLogout} className="btn-logout">
-            <FaSignOutAlt /> Cerrar Sesión
-          </button>
+          {/* SECCIÓN USUARIO (Ya no hay botón Logout) */}
+          <div className="user-info-display" style={{color: '#555', fontWeight: '500'}}>
+             Hola, {user?.name || 'Usuario'} ({user?.role})
+          </div>
 
           <div className="filters">
             <div className="date-filter">
