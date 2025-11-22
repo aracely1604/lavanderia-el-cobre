@@ -379,43 +379,19 @@
     /* Tabla de Prendas -> Tarjetas */
     .prendas-header-row { display: none; }
     
-.prenda-row {
+    .prenda-row {
         display: flex;
         flex-direction: column;
         background: #fff;
         border: 1px solid #eee;
-        padding: 15px; /* Reduje un poco el padding para dar aire */
+        padding: 15px;
         border-radius: 12px;
-        gap: 10px;
+        gap: 12px;
         position: relative;
         box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        
-        /* ESTO ES CLAVE: Evita que la tarjeta se expanda más de la cuenta */
-        box-sizing: border-box; 
-        width: 100%; 
-        overflow: hidden; /* Corta cualquier cosa que intente salirse */
     }
 
-    /* Arreglo de los Inputs (Las casillas que se salían) */
-    .prenda-row input {
-        width: 100%; /* Ocupa todo el ancho disponible */
-        
-        /* ¡LA SOLUCIÓN MÁGICA! */
-        box-sizing: border-box; /* Incluye el padding DENTRO del ancho total */
-        
-        padding: 12px;
-        background-color: #fdfdfd;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        margin-top: 5px;
-    }
-
-    /* Ajuste del contenedor padre para que no tenga scroll horizontal */
-    .prendas-container {
-        padding: 10px; /* Menos padding en celular */
-        width: 100%;
-        box-sizing: border-box;
-    }
+    .prenda-row input { padding: 10px; background-color: #fdfdfd; }
 
     /* Botón eliminar flotante */
     .p-action { position: absolute; top: 10px; right: 10px; }
