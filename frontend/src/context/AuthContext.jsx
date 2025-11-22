@@ -1,94 +1,98 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 
 const AuthContext = createContext();
 
+const SESSION_KEY = 'lavanderia_cobre_session';
+
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    try {
+      const stored = localStorage.getItem(SESSION_KEY);
+      return stored ? JSON.parse(stored) : null;
+    } catch { return null; }
+  });
+
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const verificarAcceso = async () => {
-      // 1. Obtener el token (UID) de la URL o del LocalStorage
-      const params = new URLSearchParams(window.location.search);
-      const urlToken = params.get('auth_token');
-      const storedToken = localStorage.getItem('app_auth_token');
-      
-      const uid = urlToken || storedToken;
+  const loginWithToken = async (uid) => {
+    if (!uid) { setLoading(false); return false; }
+    setLoading(true);
 
-      if (!uid) {
-        setLoading(false);
-        return;
-      }
+    try {
+      const userDocRef = doc(db, 'usuarios', uid);
+      // Intentamos obtener el documento
+      const userSnap = await getDoc(userDocRef);
 
-      try {
-        // 2. Conexión a la Base de Datos de la INTRANET
-        // IMPORTANTE: Buscamos en la colección 'usuarios' (no 'users')
-        const userDocRef = doc(db, 'usuarios', uid);
-        const userSnap = await getDoc(userDocRef);
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
 
-        if (userSnap.exists()) {
-          const userData = userSnap.data();
-          
-          // 3. Verificaciones de Seguridad
-          
-          // A. ¿El usuario está activo?
-          if (!userData.activo) {
-            console.error("Usuario inactivo en Intranet");
-            localStorage.removeItem('app_auth_token');
-            setLoading(false);
-            return;
-          }
-
-          // B. ¿El rol es válido para ESTA aplicación?
-          // La Intranet usa roles en minúsculas: 'administrador', 'recepcionista', 'operario'
-          const rolIntranet = userData.rol || ''; 
-          
-          // Definimos roles permitidos (Admin y Recepcionista)
-          const rolesPermitidos = ['administrador', 'recepcionista'];
-
-          if (rolesPermitidos.includes(rolIntranet)) {
-            // 4. Éxito: Normalizamos los datos para usarlos en la App
-            const roleCapitalized = rolIntranet.charAt(0).toUpperCase() + rolIntranet.slice(1);
-            
-            setUser({ 
-                uid, 
-                name: userData.nombre, 
-                role: roleCapitalized, // Lo guardamos como 'Administrador' o 'Recepcionista'
-                email: userData.email,
-                ...userData 
-            });
-            
-            // Persistir sesión
-            localStorage.setItem('app_auth_token', uid);
-            
-            // Limpiar URL para que no se vea el token
-            if (urlToken) {
-              window.history.replaceState({}, document.title, window.location.pathname);
-            }
-          } else {
-            console.error(`Acceso denegado. Rol "${rolIntranet}" no tiene permisos aquí.`);
-            localStorage.removeItem('app_auth_token');
-          }
-        } else {
-          console.error('UID no encontrado en la colección "usuarios".');
-          localStorage.removeItem('app_auth_token');
+        // Validar activo
+        if (userData.activo !== true) {
+          console.error('Usuario inactivo');
+          setLoading(false);
+          return false;
         }
-      } catch (error) {
-        console.error('Error de conexión con Firebase:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    verificarAcceso();
+        // Validar Rol
+        const rol = (userData.rol || '').toLowerCase();
+        const rolesPermitidos = ['administrador', 'admin', 'recepcionista'];
+
+        if (rolesPermitidos.includes(rol)) {
+          // Mapeo de Roles
+          const appRole = (rol === 'administrador' || rol === 'admin') ? 'Administrador' : 'Recepcionista';
+
+          const formattedUser = {
+            uid,
+            name: userData.nombre || userData.displayName || 'Usuario',
+            email: userData.email,
+            role: appRole
+          };
+
+          // Actualizar acceso (sin await para no bloquear)
+          updateDoc(userDocRef, { ultimo_acceso: serverTimestamp() }).catch(() => {});
+
+          setUser(formattedUser);
+          localStorage.setItem(SESSION_KEY, JSON.stringify(formattedUser));
+          setLoading(false);
+          return true;
+        }
+      }
+    } catch (error) {
+      console.error('Error en AuthContext:', error);
+    }
+
+    // Si llegamos aquí es que algo falló
+    setLoading(false);
+    return false;
+  };
+
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem(SESSION_KEY);
+    window.location.href = "https://lavanderia-cobre-landingpage.vercel.app/intranet/dashboard";
+  };
+
+  useEffect(() => {
+    // Validación rápida al recargar si hay sesión guardada
+    const init = async () => {
+      const stored = localStorage.getItem(SESSION_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        // Opcional: revalidar token en segundo plano
+        // await loginWithToken(parsed.uid); 
+        if(parsed) setUser(parsed);
+      }
+      setLoading(false);
+    };
+    init();
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, loading, loginWithToken, logout }}>
       {children}
     </AuthContext.Provider>
   );
