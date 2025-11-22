@@ -8,21 +8,16 @@ import DetalleComandaPage from './DetalleComandaPage';
 
 function App() {
 
-  return (
+return (
     <Router>
       <Routes>
-        {/* Rutas protegidas por la simulación */}
-        <Route 
-             path="/" element={<ComandasPage />} 
-        />
-        <Route 
-          path="/registro-comanda" 
-          element={isLoggedIn ? <RegistroComandaPage /> : <Navigate to="/" replace />} 
-        />
-        <Route 
-            path="/detalle/:id" 
-            element={isLoggedIn ? <DetalleComandaPage /> : <Navigate to="/" replace />} 
-        />
+        <Route path="/" element={<ComandasPage />} />
+        
+        {/* --- CAMBIO AQUÍ: Quitamos la condición de protección --- */}
+        <Route path="/registro-comanda" element={<RegistroComandaPage />} />
+        
+        {/* --- CAMBIO AQUÍ: Quitamos la condición de protección --- */}
+        <Route path="/detalle/:id" element={<DetalleComandaPage />} />
       </Routes>
     </Router>
   );
