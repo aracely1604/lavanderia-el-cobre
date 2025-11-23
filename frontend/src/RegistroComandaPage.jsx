@@ -51,15 +51,12 @@ export default function RegistroComandaPage() {
   const [prendas, setPrendas] = useState([
     { cantidad: 1, nombre: "", valor: 0, detalle: "" },
   ]);
-  const [montoSubtotal, setMontoSubtotal] = useState(0);
-  const [montoTotal, setMontoTotal] = useState(0);
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // --- ESTADOS DE MODALES ---
-  const [showModalFotos, setShowModalFotos] = useState(false); // Modal adjuntar fotos
-  const [showClientSearchModal, setShowClientSearchModal] = useState(false); // Buscar Cliente
-
-  // NUEVOS MODALES (Error y Éxito)
+  const [showModalFotos, setShowModalFotos] = useState(false);
+  const [showClientSearchModal, setShowClientSearchModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
@@ -69,38 +66,41 @@ export default function RegistroComandaPage() {
     setNumeroOrden(generarNumeroOrden());
   }, []);
 
-  // --- CÁLCULO DE TOTALES ---
-  useEffect(() => {
-    const subtotal = prendas.reduce((sum, prenda) => {
-      const valorPrenda = parseFloat(prenda.valor) || 0;
-      const cantidad = parseInt(prenda.cantidad) || 1;
-      return sum + valorPrenda * cantidad;
-    }, 0);
-    setMontoSubtotal(subtotal);
+  // --- CÁLCULO DE TOTALES (Ahora se calcula en cada render para evitar lag) ---
+  const montoSubtotal = prendas.reduce((sum, prenda) => {
+    const valorPrenda = parseFloat(prenda.valor) || 0;
+    const cantidad = parseInt(prenda.cantidad) || 1;
+    return sum + (valorPrenda * cantidad);
+  }, 0);
 
-    let totalFinal = subtotal;
+  let montoTotalCalculado = montoSubtotal;
 
-    if (servicioExpress) {
-      totalFinal = subtotal * (1 + PORCENTAJE_EXPRESS);
-    }
+  if (servicioExpress) {
+    montoTotalCalculado = montoSubtotal * (1 + PORCENTAJE_EXPRESS);
+  }
 
-    if (tipoEntrega === "Despacho") {
-      totalFinal += COSTO_DESPACHO;
-    }
+  if (tipoEntrega === "Despacho") {
+    montoTotalCalculado += COSTO_DESPACHO;
+  }
+  
+  const montoTotal = Math.round(montoTotalCalculado);
 
-    setMontoTotal(Math.round(totalFinal));
-  }, [prendas, servicioExpress, tipoEntrega]);
-
+  // --- MANEJO DE CAMBIOS EN PRENDAS (Inmutable) ---
   const handlePrendaChange = (index, field, value) => {
-    const newPrendas = [...prendas];
-    newPrendas[index][field] = value;
-    setPrendas(newPrendas);
+    setPrendas(prevPrendas => prevPrendas.map((item, i) => {
+        if (i === index) {
+            return { ...item, [field]: value };
+        }
+        return item;
+    }));
   };
+
   const addPrendaRow = () =>
     setPrendas([
       ...prendas,
       { cantidad: 1, nombre: "", valor: "", detalle: "" },
     ]);
+    
   const removePrendaRow = (index) => {
     if (prendas.length > 1) setPrendas(prendas.filter((_, i) => i !== index));
   };
@@ -114,11 +114,10 @@ export default function RegistroComandaPage() {
   };
 
   const generarCodigoEntrega = () => {
-    return Math.floor(10000 + Math.random() * 90000).toString(); // 5 dígitos
+    return Math.floor(10000 + Math.random() * 90000).toString();
   };
 
   const handleGuardar = async (enviarWhatsapp = true) => {
-    // 1. VALIDACIÓN: Si falta nombre o teléfono → mostrar modal
     if (!nombreCliente || !telefono) {
       setShowErrorModal(true);
       return;
@@ -154,7 +153,7 @@ export default function RegistroComandaPage() {
           telefono,
           tipoCliente,
           prendas,
-          montoTotal,
+          montoTotal, // Usamos la variable calculada
           storage,
           numeroBoucher,
           tipoEntrega,
@@ -164,8 +163,6 @@ export default function RegistroComandaPage() {
         console.warn("No se generó PDF automático");
       }
 
-      const enlaceFactura = urlFactura.split("?")[0];
-
       // Fecha + hora ingreso
       const ahora = new Date();
       const horaIngreso = ahora.toLocaleTimeString("es-CL", {
@@ -173,7 +170,6 @@ export default function RegistroComandaPage() {
         minute: "2-digit",
       });
 
-      // Generar código de despacho si corresponde
       let codigoDespacho = "";
       if (tipoEntrega === "Despacho") {
         codigoDespacho = generarCodigoEntrega();
@@ -203,7 +199,6 @@ export default function RegistroComandaPage() {
       // Enviar WhatsApp
       if (enviarWhatsapp && urlFactura) {
         try {
-          // Mensaje base
           let mensajeFinal =
             `¡Hola ${nombreCliente}!\n\n` +
             `Tu pedido ha sido recibido en *Lavandería El Cobre SPA* y ya está siendo procesado.\n\n` +
@@ -213,7 +208,6 @@ export default function RegistroComandaPage() {
             `Puedes revisar el estado de tu pedido en cualquier momento usando tu código en nuestra página web.\n\n` +
             `¡Gracias por confiar en nosotros!`;
 
-          // Solo si es despacho → agregar código
           if (tipoEntrega === "Despacho") {
             mensajeFinal +=
               `\n\n🔐 *Código de entrega:* ${codigoDespacho}\n` +
@@ -233,7 +227,6 @@ export default function RegistroComandaPage() {
         }
       }
 
-      // Modal de éxito
       setShowSuccessModal(true);
     } catch (error) {
       console.error("Error:", error);
@@ -243,7 +236,6 @@ export default function RegistroComandaPage() {
     }
   };
 
-  // Función para cerrar el modal de éxito y redirigir
   const handleCloseSuccess = () => {
     setShowSuccessModal(false);
     navigate("/");
@@ -398,10 +390,10 @@ return (
                 </div>
             </div>
 
-            {/* Tabla Prendas - Adaptada a Cards en Movil */}
+            {/* Tabla Prendas */}
             <div className="prendas-container">
                 <div className="prendas-header-row">
-                    <span>Cant</span>
+                    <span>Cantidad</span> {/* CORREGIDO: "Cant" -> "Cantidad" */}
                     <span>Prenda</span>
                     <span>Valor</span>
                     <span>Detalle</span>

@@ -156,7 +156,6 @@ export default function DetalleComandaPage() {
             ) : (
               <p className="no-fotos">No hay fotos adjuntas.</p>
             )}
-            {/* Botón PDF eliminado aquí */}
           </div>
 
           {/* Sección Totales */}
@@ -174,7 +173,8 @@ export default function DetalleComandaPage() {
             {comanda.tipoEntrega === 'Despacho' && (
                  <div className="total-row">
                     <span>Costo Despacho:</span>
-                    <span>+ $1.500</span>
+                    {/* CORREGIDO: De 1.500 a 3.000 */}
+                    <span>+ $3.000</span>
                  </div>
             )}
             <div className="total-final">

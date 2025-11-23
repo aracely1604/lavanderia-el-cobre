@@ -1,11 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { 
+  signInWithEmailAndPassword, 
+  signOut as firebaseSignOut,
+  onAuthStateChanged,
+} from 'firebase/auth';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
-// Asumo que tienes un archivo de configuración de Firebase en '../firebaseConfig'
-import { db } from '../firebaseConfig'; 
+import { auth, db } from '../firebaseConfig'; // Ajusta la ruta si es necesario
 
 const AuthContext = createContext();
 
-// Clave para guardar sesión en el navegador
 const SESSION_KEY = 'lavanderia_cobre_session';
 
 export const AuthProvider = ({ children }) => {
@@ -21,13 +24,29 @@ export const AuthProvider = ({ children }) => {
 
   const [loading, setLoading] = useState(true);
 
-  // Guardar sesión en localStorage
   const saveUserSession = (userData) => {
     setUser(userData);
     localStorage.setItem(SESSION_KEY, JSON.stringify(userData));
   };
 
-  // Función principal para validar el token (UID) contra Firestore
+  const clearUserSession = () => {
+    setUser(null);
+    localStorage.removeItem(SESSION_KEY);
+  };
+
+  // --- NUEVO: Función para entrar como Invitado ---
+  const loginAsGuest = () => {
+    const guestUser = {
+      uid: 'guest-user-eq2',
+      name: 'Usuario de Prueba (Eq. 2)',
+      email: 'prueba@elcobre.cl',
+      role: 'Administrador' // Rol alto para probar todo
+    };
+    saveUserSession(guestUser);
+    setLoading(false);
+  };
+  // ------------------------------------------------
+
   const loginWithToken = async (uid) => {
     if (!uid) {
       setLoading(false);
@@ -35,82 +54,68 @@ export const AuthProvider = ({ children }) => {
     }
 
     setLoading(true);
-
     try {
-      // Usamos 'usuarios' que es la colección estándar de tu Intranet
       const userDocRef = doc(db, 'usuarios', uid);
       const userSnap = await getDoc(userDocRef);
 
       if (userSnap.exists()) {
         const userData = userSnap.data();
 
-        // 1. VALIDACIÓN: ¿Está activo?
-        if (userData.activo !== true) {
-          console.error('Acceso denegado: Usuario inactivo');
-          setLoading(false);
-          return false;
+        if (userData.activo === true) {
+           const rol = (userData.rol || '').toLowerCase();
+           // Mapeo simple
+           const appRole = (rol === 'administrador' || rol === 'admin') 
+             ? 'Administrador' 
+             : 'Recepcionista';
+
+           const formattedUser = {
+             uid,
+             name: userData.nombre || userData.displayName || 'Usuario',
+             email: userData.email || userData.correo,
+             role: appRole
+           };
+
+           updateDoc(userDocRef, { ultimo_acceso: serverTimestamp() }).catch(console.error);
+           saveUserSession(formattedUser);
+           setLoading(false);
+           return true;
         }
-
-        // 2. Mapeo de Roles
-        const rol = (userData.rol || '').toLowerCase();
-        const rolesPermitidos = ['administrador', 'admin', 'recepcionista'];
-
-        if (rolesPermitidos.includes(rol)) {
-          // Mapeo a los roles de la App de Comandas: Administrador o Recepcionista
-          const appRole = (rol === 'administrador' || rol === 'admin') 
-            ? 'Administrador' 
-            : 'Recepcionista';
-
-          const formattedUser = {
-            uid,
-            name: userData.nombre || userData.displayName || 'Usuario',
-            email: userData.email || userData.correo,
-            role: appRole
-          };
-
-          // Actualizar último acceso en segundo plano
-          updateDoc(userDocRef, { ultimo_acceso: serverTimestamp() }).catch(console.error);
-
-          saveUserSession(formattedUser);
-          setLoading(false);
-          return true;
-        } else {
-          console.error('Rol no autorizado:', rol);
-        }
-      } else {
-        console.error('Usuario no encontrado en base de datos');
       }
     } catch (error) {
       console.error('Error de conexión:', error);
     }
-
     setLoading(false);
     return false;
   };
 
-  // Efecto inicial: Si recarga la página y hay token guardado, re-validamos
   useEffect(() => {
-    const initAuth = async () => {
-      const stored = localStorage.getItem(SESSION_KEY);
-      if (stored && !user) {
-        const parsed = JSON.parse(stored);
-        await loginWithToken(parsed.uid);
-      } else {
-        setLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+         if (!user || user.uid !== firebaseUser.uid) {
+            // Lógica opcional para recargar datos si es necesario
+         }
       }
-    };
-    initAuth();
-  // eslint-disable-next-line
+      setLoading(false);
+    });
+    return unsubscribe;
   }, []);
 
+  const signIn = async (email, password) => {
+    await signInWithEmailAndPassword(auth, email, password);
+  };
+
+  const signOut = async () => {
+    await firebaseSignOut(auth);
+    clearUserSession();
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, loginWithToken }}>
+    <AuthContext.Provider value={{ user, loading, loginWithToken, loginAsGuest, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Se declara y exporta UNA SOLA VEZ
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
