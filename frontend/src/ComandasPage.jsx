@@ -11,7 +11,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext"; // Importar contexto
 import "./Comandas.css";
-import logoSrc from "./assets/Logo lavanderia.jpeg";
+import logoSrc from "./assets/LogoLavanderia.png";
 import axios from "axios";
 
 import { 
@@ -115,7 +115,7 @@ export default function ComandasPage() {
       const payload = {
         numero: comanda.telefono.startsWith("+") ? comanda.telefono : `+56${comanda.telefono.replace(/\D/g, "")}`,
         enlace: comanda.facturaPDF,
-        mensaje: `¡Hola ${comanda.nombreCliente}!\n\nTu pedido orden *${comanda.numeroOrden}* ya está *listo para retiro*.\n\n🔗 https://lavanderia-el-cobre-spa.vercel.app\n\nGracias por preferir Lavandería El Cobre SPA!`,
+        mensaje: `¡Hola ${comanda.nombreCliente}!\n\nTu pedido correspondiente a la orden *${comanda.numeroOrden}* ya está *listo para retiro en Lavandería El Cobre SPA*.\n\n🔗 https://lavanderia-el-cobre-spa.vercel.app\n\nPresenta tu N° de Orden para retirar tu pedido.\n\n¡Gracias por preferir Lavandería El Cobre SPA!`,
       };
 
       await axios.post("https://us-central1-lavanderia-el-cobre-app.cloudfunctions.net/enviarWhatsappFactura", payload);
@@ -135,7 +135,7 @@ export default function ComandasPage() {
         const payload = {
             numero: comanda.telefono.startsWith("+") ? comanda.telefono : `+56${comanda.telefono.replace(/\D/g, "")}`,
             enlace: comanda.facturaPDF,
-            mensaje: `Hola ${comanda.nombreCliente},\n\nTu pedido orden *${comanda.numeroOrden}* lleva *15 días* listo. Favor retirar.`,
+            mensaje: `Hola ${comanda.nombreCliente},\n\nTu pedido correspondiente a la orden *${comanda.numeroOrden}* lleva *15 días* listo para retiro.\n\nTe solicitamos gestionar el retiro a la brevedad.\n\nGracias.`,
         };
         await axios.post("https://us-central1-lavanderia-el-cobre-app.cloudfunctions.net/enviarWhatsappFactura", payload);
         await updateDoc(doc(db, "comandas_2", comanda.id), { notificado15: true, fechaNotificacion15: new Date() });
@@ -147,7 +147,7 @@ export default function ComandasPage() {
         const payload = {
             numero: comanda.telefono.startsWith("+") ? comanda.telefono : `+56${comanda.telefono.replace(/\D/g, "")}`,
             enlace: comanda.facturaPDF,
-            mensaje: `Hola ${comanda.nombreCliente},\n\nTu pedido orden *${comanda.numeroOrden}* lleva *30 días* sin retiro.`,
+            mensaje: `Hola ${comanda.nombreCliente},\n\nTu pedido correspondiente a la orden *${comanda.numeroOrden}* lleva *30 días* sin ser retirado.\n\nLa empresa no se hace responsable por prendas después de este periodo.\n\nGracias.`,
         };
         await axios.post("https://us-central1-lavanderia-el-cobre-app.cloudfunctions.net/enviarWhatsappFactura", payload);
         await updateDoc(doc(db, "comandas_2", comanda.id), { notificado30: true, fechaNotificacion30: new Date() });
@@ -161,7 +161,7 @@ export default function ComandasPage() {
       const payload = {
         numero: comanda.telefono.startsWith("+") ? comanda.telefono : `+56${comanda.telefono.replace(/\D/g, "")}`,
         enlace: comanda.facturaPDF || "",
-        mensaje: `¡Hola ${comanda.nombreCliente}!\n\nTu pedido *${comanda.numeroOrden}* va en camino 🚚.\n\n*Código:* ${comanda.codigoDespacho}\n\nGracias!`,
+        mensaje: `¡Hola ${comanda.nombreCliente}!\n\nTu pedido *${comanda.numeroOrden}* va en camino 🚚.\n\n*Recuerda tu código de entrega:* ${comanda.codigoDespacho}\n\nGracias!`,
       };
 
       await axios.post("https://us-central1-lavanderia-el-cobre-app.cloudfunctions.net/enviarWhatsappFactura", payload);

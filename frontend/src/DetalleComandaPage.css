@@ -1,10 +1,11 @@
-/* Fondo general de la página para centrar contenido */
+/* Fondo general */
 .detalle-page-wrapper {
     min-height: 100vh;
     padding: 20px;
-    background-color: #f4f4f9;
+    background-color: #fff4f0; /* Fondo Claro */
     display: flex;
     justify-content: center;
+    font-family: 'Inter', system-ui, sans-serif;
 }
 
 /* Contenedor Principal */
@@ -32,14 +33,15 @@
 .btn-back {
     background: none;
     border: none;
-    color: #a0522d;
+    color: #ff6b35; /* Naranja Principal */
     font-weight: 700;
     font-size: 1rem;
     cursor: pointer;
     transition: color 0.2s;
+    font-family: 'Inter', system-ui, sans-serif;
 }
 .btn-back:hover {
-    color: #cd853f;
+    color: #e85d2e; /* Naranja Acento */
     text-decoration: underline;
 }
 
@@ -48,7 +50,7 @@
 }
 
 .status-badge {
-    background-color: #28a745; /* Verde para activa */
+    background-color: #28a745;
     color: white;
     padding: 4px 10px;
     border-radius: 12px;
@@ -60,12 +62,12 @@
 
 .numero-orden {
     margin: 5px 0 0 0;
-    color: #333;
+    color: #1a1a2e; /* Texto Principal */
     font-size: 1.8em;
     font-weight: 800;
 }
 
-/* --- Grid de Información (Cliente y Orden) --- */
+/* --- Grid de Información --- */
 .info-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -77,16 +79,16 @@
 }
 
 .info-card {
-    background-color: #fff8f0; /* Fondo crema muy suave */
-    border: 1px solid #e0d0c0;
+    background-color: #fffbf7; /* Crema muy suave */
+    border: 1px solid #ffb84d; /* Borde Dorado */
     border-radius: 10px;
     padding: 20px;
 }
 
 .card-title {
     margin-top: 0;
-    color: #a0522d;
-    border-bottom: 1px solid #e0d0c0;
+    color: #e85d2e; /* Naranja Oscuro */
+    border-bottom: 1px solid #ffb84d;
     padding-bottom: 10px;
     margin-bottom: 15px;
     font-size: 1.1em;
@@ -101,24 +103,24 @@
 }
 
 .info-row .label {
-    color: #666;
+    color: #6b6b7e; /* Gris medio */
     font-weight: 600;
 }
 
 .info-row .value {
-    color: #333;
+    color: #1a1a2e; /* Texto Principal */
     font-weight: 500;
     text-align: right;
 }
 
 .info-row .value.highlight {
-    color: #cd853f;
+    color: #ff6b35; /* Naranja Principal */
     font-weight: bold;
 }
 
 .express-alert {
-    background-color: #ffc107;
-    color: #333;
+    background-color: #ffb84d; /* Dorado */
+    color: #1a1a2e;
     text-align: center;
     padding: 8px;
     border-radius: 6px;
@@ -145,7 +147,7 @@
 }
 
 .section-title {
-    color: #333;
+    color: #1a1a2e;
     margin-bottom: 15px;
     font-size: 1.2em;
 }
@@ -160,7 +162,7 @@
 }
 
 .tabla-detalle th {
-    background-color: #a0522d;
+    background-color: #ff6b35; /* Naranja Principal */
     color: white;
     padding: 12px;
     text-align: left;
@@ -171,7 +173,7 @@
 .tabla-detalle td {
     padding: 12px;
     border-bottom: 1px solid #eee;
-    color: #444;
+    color: #2c2c3e; /* Texto secundario claro */
 }
 
 .tabla-detalle .derecha, .tabla-detalle th.derecha {
@@ -180,17 +182,17 @@
 
 .tabla-detalle .cant-col {
     font-weight: bold;
-    color: #a0522d;
+    color: #e85d2e;
     text-align: center;
 }
 
 .tabla-detalle .detalle-prenda {
-    color: #888;
+    color: #6b6b7e;
     font-style: italic;
     font-size: 0.9em;
 }
 
-/* --- Footer (Fotos y Totales) --- */
+/* --- Footer --- */
 .footer-grid {
     display: grid;
     grid-template-columns: 1.5fr 1fr;
@@ -205,7 +207,7 @@
 /* Fotos */
 .fotos-section h4 {
     margin-top: 0;
-    color: #555;
+    color: #6b6b7e;
     margin-bottom: 15px;
 }
 
@@ -226,7 +228,7 @@
 
 .img-link img:hover {
     transform: scale(1.1);
-    border-color: #cd853f;
+    border-color: #ff6b35;
 }
 
 .no-fotos {
@@ -234,26 +236,10 @@
     font-style: italic;
 }
 
-.btn-pdf {
-    display: inline-block;
-    margin-top: 15px;
-    background-color: #dc3545; /* Rojo PDF */
-    color: white;
-    padding: 8px 15px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-size: 0.9em;
-    font-weight: bold;
-    transition: background 0.2s;
-}
-.btn-pdf:hover {
-    background-color: #bb2d3b;
-}
-
 /* Totales Card */
 .totales-card {
     background-color: #fff;
-    border-top: 2px solid #cd853f;
+    border-top: 2px solid #ff6b35;
     padding: 20px;
     box-shadow: 0 -5px 20px rgba(0,0,0,0.03);
 }
@@ -262,12 +248,12 @@
     display: flex;
     justify-content: space-between;
     margin-bottom: 8px;
-    color: #666;
+    color: #6b6b7e;
     font-size: 0.95em;
 }
 
 .total-row.express {
-    color: #e67e22; /* Naranja alerta */
+    color: #e85d2e;
 }
 
 .total-final {
@@ -278,12 +264,12 @@
     border-top: 1px solid #eee;
     font-size: 1.4em;
     font-weight: 800;
-    color: #a0522d;
+    color: #ff6b35;
 }
 
 .loading-text {
     text-align: center;
     margin-top: 50px;
     font-size: 1.2em;
-    color: #a0522d;
+    color: #ff6b35;
 }

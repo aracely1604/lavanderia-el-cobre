@@ -5,7 +5,7 @@ import { db, storage } from "./firebaseConfig";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import "./RegistroComanda.css";
-import logoSrc from "./assets/Logo lavanderia.jpeg";
+import logoSrc from "./assets/LogoLavanderia.png";
 import generarFactura from "./FacturaGenerador";
 import ModuloClienteRecientes from "./ModuloClienteReciente";
 

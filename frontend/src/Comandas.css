@@ -1,24 +1,30 @@
 :root {
-  --header-bg: #a0522d;
-  --primary: #cd853f;
-  --primary-hover: #a0522d;
-  --bg-light: #f9f9f9;
-  --text-dark: #333;
+  /* NUEVA PALETA DE COLORES */
+  --primary: #ff6b35;       /* Naranja Cobreloa */
+  --primary-hover: #e85d2e; /* Naranja Oscuro ACENTO */
+  --secondary: #ffb84d;     /* Dorado OSCUROS (usado para advertencias o detalles) */
+  --bg-light: #fff4f0;      /* Fondo claro */
+  --text-main: #1a1a2e;     /* Textos principales */
+  --text-secondary: #6b6b7e;/* Gris medio */
   --border-color: #ddd;
+  --white: #ffffff;
 }
 
 body {
-    background-color: #f4f4f9;
+    background-color: var(--bg-light);
+    /* NUEVA FUENTE */
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--text-main);
 }
 
 /* Header */
 .auth-header {
-  background-color: var(--header-bg);
-  color: white;
+  background-color: var(--primary);
+  color: var(--white);
   padding: 1rem 2rem;
-  border-bottom: 4px solid var(--primary);
+  border-bottom: 4px solid var(--primary-hover);
   display: flex;
-  justify-content: center; /* Centrado en movil por defecto */
+  justify-content: center;
 }
 
 .header-brand {
@@ -30,15 +36,14 @@ body {
 .auth-logo {
   height: 40px;
   width: 40px;
-  border-radius: 4px;
-  border: 2px solid white;
+  border-radius: 50%; /* Cambiado de 4px a 50% para hacerlo redondo */
+  border: 2px solid var(--white);
 }
-
 .comandas-main {
   width: 100%;
   max-width: 1200px;
   margin: 2rem auto;
-  padding: 0 15px; /* Padding seguro para moviles */
+  padding: 0 15px;
 }
 
 /* Toolbar y Filtros */
@@ -46,12 +51,12 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: white;
+  background: var(--white);
   padding: 15px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   margin-bottom: 2rem;
-  flex-wrap: wrap; /* Importante para permitir saltos */
+  flex-wrap: wrap;
   gap: 15px;
 }
 
@@ -66,7 +71,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #666;
+    color: var(--text-secondary);
 }
 
 .filter-buttons {
@@ -82,6 +87,7 @@ body {
     font-weight: bold;
     font-size: 0.85rem;
     transition: transform 0.1s;
+    font-family: 'Inter', system-ui, sans-serif;
 }
 
 .filter-btn:active { transform: scale(0.95); }
@@ -97,15 +103,16 @@ body {
   cursor: pointer;
   text-transform: uppercase;
   font-size: 0.9rem;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
-.btn-logout { background-color: #eee; color: #333; }
-.btn-crear-comanda { background-color: var(--primary); color: white; }
+.btn-logout { background-color: #eee; color: var(--text-main); }
+.btn-crear-comanda { background-color: var(--primary); color: var(--white); }
 .btn-crear-comanda:hover { background-color: var(--primary-hover); }
 
-/* Estilos Generales de Tabla (Escritorio) */
+/* Estilos Generales de Tabla */
 .table-container {
-  background: white;
+  background: var(--white);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   overflow: hidden;
@@ -120,11 +127,12 @@ table th, table td {
   padding: 12px 15px;
   text-align: left;
   border-bottom: 1px solid var(--border-color);
+  color: var(--text-main);
 }
 
 table th {
-  background-color: #f1f1f1;
-  color: #555;
+  background-color: #f8f8f8;
+  color: var(--text-secondary);
   font-weight: 700;
   text-transform: uppercase;
   font-size: 0.8rem;
@@ -139,11 +147,11 @@ table th {
     padding: 5px;
     transition: color 0.2s;
 }
-.view-btn { color: #004080; }
-.view-btn:hover { color: #0066cc; }
+.view-btn { color: var(--primary); }
+.view-btn:hover { color: var(--primary-hover); }
 
 .btn-icon-cancel {
-    background: white;
+    background: var(--white);
     border: 2px solid #dc3545;
     color: #dc3545;
     border-radius: 50%;
@@ -154,9 +162,9 @@ table th {
     justify-content: center;
     cursor: pointer;
 }
-.btn-icon-cancel:hover { background: #dc3545; color: white; }
+.btn-icon-cancel:hover { background: #dc3545; color: var(--white); }
 
-/* Botones de Acción dentro de la tabla */
+/* Botones de Acción */
 .actions-wrapper {
     display: flex;
     gap: 5px;
@@ -172,12 +180,13 @@ table th {
     border-radius: 4px;
     font-size: 0.75rem;
     font-weight: 700;
-    color: white;
+    color: var(--white);
     cursor: pointer;
+    font-family: 'Inter', system-ui, sans-serif;
 }
 .btn-descargar { background-color: #17a2b8; }
 .btn-success { background-color: #28a745; }
-.btn-warning { background-color: #d68a31; }
+.btn-warning { background-color: var(--secondary); color: var(--text-main); } /* Dorado para warning */
 .btn-small { padding: 6px; }
 
 .cancelada-badge {
@@ -190,115 +199,58 @@ table th {
 }
 
 .section-header { margin: 30px 0 15px 0; font-size: 1.3rem; display: flex; align-items: center; gap: 10px; }
-.retiros { color: #004080; }
-.despachos { color: #d68a31; }
+.retiros { color: var(--text-main); }
+.despachos { color: var(--primary-hover); }
 
-/* --- RESPONSIVE: MÓVIL Y TABLET VERTICAL --- */
+/* --- RESPONSIVE --- */
 @media (max-width: 900px) {
-    
-    /* Toolbar apilada */
-    .comandas-toolbar {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 20px;
-    }
-
-    .filters {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .filter-buttons {
-        justify-content: space-between;
-    }
+    .comandas-toolbar { flex-direction: column; align-items: stretch; gap: 20px; }
+    .filters { flex-direction: column; align-items: stretch; }
+    .filter-buttons { justify-content: space-between; }
     .filter-btn { flex: 1; }
-
     .date-filter { justify-content: center; width: 100%; }
     .filter-input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; }
 
-    /* TABLA TRANSFORMADA EN TARJETAS */
-    table, thead, tbody, th, td, tr {
-        display: block;
-    }
-
-    /* Ocultar cabecera de tabla */
-    thead tr {
-        position: absolute;
-        top: -9999px;
-        left: -9999px;
-    }
-
+    /* TABLA CARDS */
+    table, thead, tbody, th, td, tr { display: block; }
+    thead tr { position: absolute; top: -9999px; left: -9999px; }
     tbody tr {
         margin-bottom: 15px;
-        background: white;
+        background: var(--white);
         border-radius: 10px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         border: 1px solid #e0e0e0;
         padding: 10px;
     }
-
     td {
         border: none;
         border-bottom: 1px solid #eee;
         position: relative;
-        padding-left: 40%; /* Espacio para la etiqueta */
+        padding-left: 40%;
         padding-top: 10px;
         padding-bottom: 10px;
         display: flex;
         align-items: center;
-        justify-content: flex-end; /* Contenido a la derecha */
+        justify-content: flex-end;
         min-height: 40px;
         text-align: right;
     }
-
     td:last-child { border-bottom: none; }
-
-    /* Etiqueta simulada (usando data-label) */
     td::before {
-        position: absolute;
-        top: 50%;
-        left: 10px;
-        transform: translateY(-50%);
-        width: 35%;
-        padding-right: 10px;
-        white-space: nowrap;
+        position: absolute; top: 50%; left: 10px; transform: translateY(-50%);
+        width: 35%; padding-right: 10px; white-space: nowrap;
         content: attr(data-label);
         font-weight: bold;
-        color: #a0522d;
+        color: var(--primary); /* Títulos de la tarjeta en Naranja */
         text-align: left;
         text-transform: uppercase;
         font-size: 0.8rem;
     }
-
-    /* Ajustes específicos para celdas */
-    .actions-cell {
-        display: block;
-        width: 100%;
-        padding-left: 0;
-        text-align: center;
-    }
-    
-    .actions-cell::before { display: none; } /* Ocultar etiqueta en acciones */
-
-    .actions-wrapper {
-        justify-content: center;
-        margin-top: 5px;
-        gap: 10px;
-    }
-
-    .btn-accion {
-        flex: 1;
-        justify-content: center;
-        padding: 10px;
-    }
-    
-    .btn-text { display: inline; } /* Mostrar texto en movil */
-
-    /* Botón Ver Detalle destacado */
-    td[data-label="Detalle"] {
-        background-color: #f9f9f9;
-        justify-content: center;
-        padding-left: 0;
-    }
+    .actions-cell { display: block; width: 100%; padding-left: 0; text-align: center; }
+    .actions-cell::before { display: none; }
+    .actions-wrapper { justify-content: center; margin-top: 5px; gap: 10px; }
+    .btn-accion { flex: 1; justify-content: center; padding: 10px; }
+    .btn-text { display: inline; }
+    td[data-label="Detalle"] { background-color: #f9f9f9; justify-content: center; padding-left: 0; }
     td[data-label="Detalle"]::before { display: none; }
 }

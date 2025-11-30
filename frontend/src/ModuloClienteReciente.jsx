@@ -60,7 +60,7 @@ export default function ModuloClienteRecientes({ isOpen, onClose, onClientFound 
             <input
             type="tel"
             className="search-input"
-            placeholder="+569 1234 5678"
+            placeholder="+56912345678"
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
