@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { db } from "./firebaseConfig"; // Ya no importamos 'auth' ni 'signOut'
+import { db } from "./firebaseConfig";
 import {
   collection,
   query,
@@ -9,23 +9,26 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "./context/AuthContext"; // Importar contexto
+import { useAuth } from "./context/AuthContext";
 import "./Comandas.css";
 import logoSrc from "./assets/LogoLavanderia.png";
 import axios from "axios";
 
 import { 
   FaEye, FaFilePdf, FaWhatsapp, FaTrash, FaTruck, 
-  FaBoxOpen, FaPlus, FaFilter, FaClock, FaExclamationTriangle 
+  FaBoxOpen, FaPlus, FaFilter, FaClock, FaExclamationTriangle, FaChevronDown 
 } from "react-icons/fa";
 
 export default function ComandasPage() {
   const navigate = useNavigate();
-  const { user } = useAuth(); // Obtenemos el usuario y su rol
+  const { user } = useAuth();
   
   const [comandas, setComandas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState("todos");
+
+  // --- NUEVO ESTADO PARA PAGINACIÓN ---
+  const [cantidadVisible, setCantidadVisible] = useState(5);
 
   // --- ESTADOS PARA EL MODAL DE CANCELAR ---
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -76,10 +79,34 @@ export default function ComandasPage() {
     return () => unsubscribe();
   }, [filtroFecha]);
 
-  const comandasRetiro = comandas.filter((c) => c.tipoEntrega === "Retiro");
-  const comandasDespacho = comandas.filter((c) => c.tipoEntrega === "Despacho");
+  // --- REINICIAR CONTADOR AL CAMBIAR FILTROS ---
+  useEffect(() => {
+    setCantidadVisible(5);
+  }, [filtroFecha, viewMode]);
 
-  // --- LOGICA CANCELAR ---
+  // Filtramos las listas completas
+  const todasRetiro = comandas.filter((c) => c.tipoEntrega === "Retiro");
+  const todasDespacho = comandas.filter((c) => c.tipoEntrega === "Despacho");
+
+  // Recortamos las listas según la cantidad visible
+  const comandasRetiroVisibles = todasRetiro.slice(0, cantidadVisible);
+  const comandasDespachoVisibles = todasDespacho.slice(0, cantidadVisible);
+
+  // Lógica para saber si mostrar el botón "Mostrar más"
+  const hayMasRetiro = todasRetiro.length > cantidadVisible;
+  const hayMasDespacho = todasDespacho.length > cantidadVisible;
+  
+  // Dependiendo del modo de vista, decidimos si mostramos el botón
+  let mostrarBotonCargarMas = false;
+  if (viewMode === 'todos' && (hayMasRetiro || hayMasDespacho)) mostrarBotonCargarMas = true;
+  if (viewMode === 'retiro' && hayMasRetiro) mostrarBotonCargarMas = true;
+  if (viewMode === 'despacho' && hayMasDespacho) mostrarBotonCargarMas = true;
+
+  const cargarMasComandas = () => {
+    setCantidadVisible(prev => prev + 5);
+  };
+
+  // --- LOGICA CANCELAR (Igual que antes) ---
   const handleClickCancelar = (id) => {
     setIdToDelete(id);
     setShowCancelModal(true);
@@ -87,12 +114,9 @@ export default function ComandasPage() {
 
   const confirmarCancelacion = async () => {
     if (!idToDelete) return;
-
     try {
       const comandaRef = doc(db, "comandas_2", idToDelete);
-      await updateDoc(comandaRef, {
-        estado: "Cancelada",
-      });
+      await updateDoc(comandaRef, { estado: "Cancelada" });
       setShowCancelModal(false);
       setIdToDelete(null);
     } catch (error) {
@@ -106,7 +130,7 @@ export default function ComandasPage() {
     setIdToDelete(null);
   };
 
-  // --- FUNCIONES DE NOTIFICACIÓN (Sin cambios mayores) ---
+  // --- FUNCIONES DE NOTIFICACIÓN (Sin cambios) ---
   const enviarNotificacion = async (comanda) => {
     try {
       if (!comanda.telefono) return alert("Sin teléfono");
@@ -157,15 +181,12 @@ export default function ComandasPage() {
   const enviarNotificacionDespachoEnCamino = async (comanda) => {
     try {
       if (!comanda.telefono || !comanda.codigoDespacho) return alert("Datos incompletos para despacho");
-
       const payload = {
         numero: comanda.telefono.startsWith("+") ? comanda.telefono : `+56${comanda.telefono.replace(/\D/g, "")}`,
         enlace: comanda.facturaPDF || "",
         mensaje: `¡Hola ${comanda.nombreCliente}!\n\nTu pedido *${comanda.numeroOrden}* va en camino 🚚.\n\n*Recuerda tu código de entrega:* ${comanda.codigoDespacho}\n\nGracias!`,
       };
-
       await axios.post("https://us-central1-lavanderia-el-cobre-app.cloudfunctions.net/enviarWhatsappFactura", payload);
-
       await updateDoc(doc(db, "comandas_2", comanda.id), {
         notificadoEnCamino: true,
         fechaNotificacionEnCamino: new Date(),
@@ -196,22 +217,13 @@ export default function ComandasPage() {
 
   const renderFila = (comanda, mostrarBotonesNotificacion) => {
     const isCancelada = comanda.estado === "Cancelada";
-    const rowStyle = isCancelada
-      ? { backgroundColor: "#ffebee", color: "#999" }
-      : {};
-
-    // PERMISOS: Solo Administrador puede cancelar
+    const rowStyle = isCancelada ? { backgroundColor: "#ffebee", color: "#999" } : {};
     const puedeCancelar = user?.role === 'Administrador';
 
     return (
       <tr key={comanda.id} style={rowStyle}>
         <td data-label="Detalle" className="center-content">
-          <button 
-             className="icon-btn view-btn"
-             title="Ver detalle"
-             onClick={() => navigate(`/detalle/${comanda.id}`)}
-             disabled={isCancelada}
-          >
+          <button className="icon-btn view-btn" title="Ver detalle" onClick={() => navigate(`/detalle/${comanda.id}`)} disabled={isCancelada}>
             <FaEye />
           </button>
         </td>
@@ -219,77 +231,40 @@ export default function ComandasPage() {
         <td data-label="Cliente">{comanda.nombreCliente}</td>
         <td data-label="Tipo">{comanda.tipoCliente}</td>
         <td data-label="Fecha">
-          {comanda.fechaIngreso?.toDate
-            ? comanda.fechaIngreso.toDate().toLocaleDateString("es-CL")
-            : "Inválida"}
+          {comanda.fechaIngreso?.toDate ? comanda.fechaIngreso.toDate().toLocaleDateString("es-CL") : "Inválida"}
         </td>
         <td data-label="Hora">{comanda.horaIngreso || "--:--"}</td>
         <td data-label="Total" style={{ textDecoration: isCancelada ? "line-through" : "none" }}>
           ${new Intl.NumberFormat("es-CL").format(comanda.montoTotal || 0)}
         </td>
-
         <td data-label="Acciones" className="actions-cell">
             <div className="actions-wrapper">
-                <button
-                    className="btn-accion btn-descargar"
-                    onClick={() => handleDescargarFactura(comanda.facturaPDF)}
-                    disabled={isCancelada}
-                    title="Descargar PDF"
-                >
+                <button className="btn-accion btn-descargar" onClick={() => handleDescargarFactura(comanda.facturaPDF)} disabled={isCancelada} title="Descargar PDF">
                     <FaFilePdf /> <span className="btn-text">PDF</span>
                 </button>
-
                 {comanda.tipoEntrega === "Despacho" && (
-                    <button
-                    className={`btn-accion ${comanda.notificadoEnCamino ? 'btn-success' : 'btn-warning'}`}
-                    onClick={() => enviarNotificacionDespachoEnCamino(comanda)}
-                    disabled={comanda.notificadoEnCamino || isCancelada}
-                    >
+                    <button className={`btn-accion ${comanda.notificadoEnCamino ? 'btn-success' : 'btn-warning'}`} onClick={() => enviarNotificacionDespachoEnCamino(comanda)} disabled={comanda.notificadoEnCamino || isCancelada}>
                     <FaTruck /> <span className="btn-text">{comanda.notificadoEnCamino ? "ENVIADO" : "CAMINO"}</span>
                     </button>
                 )}
-
                 {mostrarBotonesNotificacion && (
                     <>
-                    <button
-                        className={`btn-accion ${comanda.notificado ? 'btn-success' : 'btn-warning'}`}
-                        onClick={() => enviarNotificacion(comanda)}
-                        disabled={comanda.notificado || isCancelada}
-                    >
+                    <button className={`btn-accion ${comanda.notificado ? 'btn-success' : 'btn-warning'}`} onClick={() => enviarNotificacion(comanda)} disabled={comanda.notificado || isCancelada}>
                         <FaWhatsapp /> <span className="btn-text">{comanda.notificado ? "LISTO" : "LISTO"}</span>
                     </button>
-
-                    <button
-                        className={`btn-accion btn-small ${comanda.notificado15 ? 'btn-success' : 'btn-warning'}`}
-                        onClick={() => enviarNotificacionAtraso15(comanda)}
-                        disabled={comanda.notificado15 || isCancelada}
-                        title="Notificar 15 días"
-                    >
+                    <button className={`btn-accion btn-small ${comanda.notificado15 ? 'btn-success' : 'btn-warning'}`} onClick={() => enviarNotificacionAtraso15(comanda)} disabled={comanda.notificado15 || isCancelada} title="Notificar 15 días">
                         <FaClock /> 15
                     </button>
-
-                    <button
-                        className={`btn-accion btn-small ${comanda.notificado30 ? 'btn-success' : 'btn-warning'}`}
-                        onClick={() => enviarNotificacionAtraso30(comanda)}
-                        disabled={comanda.notificado30 || isCancelada}
-                        title="Notificar 30 días"
-                    >
+                    <button className={`btn-accion btn-small ${comanda.notificado30 ? 'btn-success' : 'btn-warning'}`} onClick={() => enviarNotificacionAtraso30(comanda)} disabled={comanda.notificado30 || isCancelada} title="Notificar 30 días">
                         <FaExclamationTriangle /> 30
                     </button>
                     </>
                 )}
-
-                {/* SOLO SE MUESTRA SI NO ESTÁ CANCELADA Y EL USUARIO ES ADMIN */}
                 {!isCancelada && puedeCancelar && (
-                    <button
-                    className="btn-icon-cancel"
-                    onClick={() => handleClickCancelar(comanda.id)}
-                    title="Cancelar pedido"
-                    >
+                    <button className="btn-icon-cancel" onClick={() => handleClickCancelar(comanda.id)} title="Cancelar pedido">
                     <FaTrash />
                     </button>
                 )}
-                
                 {isCancelada && <span className="cancelada-badge">CANCELADA</span>}
             </div>
         </td>
@@ -322,20 +297,13 @@ export default function ComandasPage() {
 
       <main className="comandas-main">
         <div className="comandas-toolbar">
-          {/* SECCIÓN USUARIO (Ya no hay botón Logout) */}
           <div className="user-info-display" style={{color: '#555', fontWeight: '500'}}>
              Hola, {user?.name || 'Usuario'} ({user?.role})
           </div>
-
           <div className="filters">
             <div className="date-filter">
                 <FaFilter className="filter-icon"/>
-                <input
-                type="date"
-                value={filtroFecha}
-                onChange={(e) => setFiltroFecha(e.target.value)}
-                className="filter-input"
-                />
+                <input type="date" value={filtroFecha} onChange={(e) => setFiltroFecha(e.target.value)} className="filter-input"/>
             </div>
             <div className="filter-buttons">
               <button onClick={() => setViewMode("todos")} className="filter-btn" style={getFilterButtonStyle("todos")}>TODOS</button>
@@ -343,7 +311,6 @@ export default function ComandasPage() {
               <button onClick={() => setViewMode("despacho")} className="filter-btn" style={getFilterButtonStyle("despacho")}>DESPACHO</button>
             </div>
           </div>
-
           <button onClick={() => navigate("/registro-comanda")} className="btn-crear-comanda">
             <FaPlus /> Crear Comanda
           </button>
@@ -351,7 +318,7 @@ export default function ComandasPage() {
 
         {(viewMode === "todos" || viewMode === "retiro") && (
           <>
-            <h2 className="section-header retiros"><FaBoxOpen /> Retiro en Local</h2>
+            <h2 className="section-header retiros"><FaBoxOpen /> Retiro en Local ({comandasRetiroVisibles.length}/{todasRetiro.length})</h2>
             <div className="table-container">
               <table>
                 <thead>
@@ -368,8 +335,8 @@ export default function ComandasPage() {
                 </thead>
                 <tbody>
                   {loading && <tr><td colSpan="8" className="center-text">Cargando...</td></tr>}
-                  {!loading && comandasRetiro.length === 0 && <tr><td colSpan="8" className="center-text">No hay datos.</td></tr>}
-                  {comandasRetiro.map((comanda) => renderFila(comanda, true))}
+                  {!loading && comandasRetiroVisibles.length === 0 && <tr><td colSpan="8" className="center-text">No hay datos.</td></tr>}
+                  {comandasRetiroVisibles.map((comanda) => renderFila(comanda, true))}
                 </tbody>
               </table>
             </div>
@@ -378,7 +345,7 @@ export default function ComandasPage() {
 
         {(viewMode === "todos" || viewMode === "despacho") && (
           <>
-            <h2 className="section-header despachos"><FaTruck /> Despacho a Domicilio</h2>
+            <h2 className="section-header despachos"><FaTruck /> Despacho a Domicilio ({comandasDespachoVisibles.length}/{todasDespacho.length})</h2>
             <div className="table-container">
               <table>
                 <thead>
@@ -395,13 +362,23 @@ export default function ComandasPage() {
                 </thead>
                 <tbody>
                   {loading && <tr><td colSpan="8" className="center-text">Cargando...</td></tr>}
-                  {!loading && comandasDespacho.length === 0 && <tr><td colSpan="8" className="center-text">No hay datos.</td></tr>}
-                  {comandasDespacho.map((comanda) => renderFila(comanda, false))}
+                  {!loading && comandasDespachoVisibles.length === 0 && <tr><td colSpan="8" className="center-text">No hay datos.</td></tr>}
+                  {comandasDespachoVisibles.map((comanda) => renderFila(comanda, false))}
                 </tbody>
               </table>
             </div>
           </>
         )}
+
+        {/* --- BOTÓN MOSTRAR MÁS --- */}
+        {mostrarBotonCargarMas && (
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', marginBottom: '40px' }}>
+            <button className="btn-mostrar-mas" onClick={cargarMasComandas}>
+              <FaChevronDown /> Mostrar más ({cantidadVisible} mostrados)
+            </button>
+          </div>
+        )}
+
       </main>
     </div>
   );
